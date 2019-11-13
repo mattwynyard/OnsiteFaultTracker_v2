@@ -58,7 +58,7 @@ public class EXIFUtil {
         }
     }
 
-    public void geoTagFile(String path, Date timeStamp, Location location) {
+    public void geoTagFile(String path, String timeStamp, Location location) {
         String datum = "WGS_84";
         Double latitude_ref;
         Double longitude_ref;
@@ -80,7 +80,7 @@ public class EXIFUtil {
         String longitude = DMS(longitude_ref, 10000);
         String altitude = formatEXIFDouble(altitude_ref, 100);
         writeGeoTag(path, latitude, latitude_ref, longitude, longitude_ref, altitude, altitude_ref,
-                bearing, timeStamp.toString(), datum);
+                bearing, timeStamp, datum);
     }
     //--EXIF FUNCTIONS--
 //TODO fix for negative altitudes

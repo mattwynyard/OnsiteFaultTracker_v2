@@ -214,7 +214,7 @@ public class SettingsFragment extends BaseFragment implements SettingItem.Listen
      * Sets the initial values of the sliders and the value text views
      */
     private void setInitialValues() {
-        SettingsUtil.sharedInstance().resetSettings();
+        //SettingsUtil.sharedInstance().resetSettings();
         mCameraId = SettingsUtil.sharedInstance().getCameraId();
         mFrequencyMilliseconds = SettingsUtil.sharedInstance().getPictureFrequency();
         mImageSize = SettingsUtil.sharedInstance().getImageSize();
@@ -332,6 +332,7 @@ public class SettingsFragment extends BaseFragment implements SettingItem.Listen
      */
     private void updateFrequencyTextView(final long frequencyMilliseconds) {
         mFrequencyItem.setValue((frequencyMilliseconds / 1000.0f));
+        //SettingsUtil.sharedInstance().setPictureFrequency(frequencyMilliseconds);
     }
 
     /**

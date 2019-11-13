@@ -2,10 +2,14 @@ package com.onsite.onsitefaulttracker_v2.connectivity;
 
 import android.app.Application;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.util.Log;
-
 import com.onsite.onsitefaulttracker_v2.model.notifcation_events.BLTStartRecordingEvent;
 import com.onsite.onsitefaulttracker_v2.model.notifcation_events.BLTStopRecordingEvent;
 import com.onsite.onsitefaulttracker_v2.util.BatteryUtil;
@@ -13,15 +17,8 @@ import com.onsite.onsitefaulttracker_v2.util.BitmapSaveUtil;
 import com.onsite.onsitefaulttracker_v2.util.BusNotificationUtil;
 import com.onsite.onsitefaulttracker_v2.util.MessageUtil;
 import com.onsite.onsitefaulttracker_v2.util.ThreadUtil;
-
-//import com.onsite.onsitefaulttracker.model.notifcation_events.BLTStartRecordingEvent;
-//import com.onsite.onsitefaulttracker.model.notifcation_events.BLTStopRecordingEvent;
 import com.onsite.onsitefaulttracker_v2.model.notifcation_events.BLTConnectedNotification;
 import com.onsite.onsitefaulttracker_v2.model.notifcation_events.BLTNotConnectedNotification;
-
-
-import org.apache.commons.lang3.time.DateUtils;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,20 +27,10 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class BLTManager {
@@ -114,9 +101,6 @@ public class BLTManager {
         mApplicationContext = applicationContext;
         setupBluetooth();
         Log.i(TAG, "Bluetooth Setup");
-
-        //com.onsite.onsitefaulttracker.util.ThreadFactoryUtil factory = new com.onsite.onsitefaulttracker.util.ThreadFactoryUtil("message");
-
         mThreadPool = BitmapSaveUtil.sharedInstance().getThreadPool();
     }
 
@@ -165,6 +149,41 @@ public class BLTManager {
         mState = STATE_NONE;
     }
 
+    public void startDiscovery() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        mApplicationContext.registerReceiver(mReceiver, filter);
+        if (mBluetoothAdapter.isDiscovering()) {
+            // Bluetooth is already in discovery mode, we cancel to restart it again
+            mBluetoothAdapter.cancelDiscovery();
+        }
+        mBluetoothAdapter.startDiscovery();
+    }
+
+    /**
+     * Receives events when a bluetooth device has been discovered: DEPRECIATED
+     */
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.i(TAG, "onResumeCalled");
+            String action = intent.getAction();
+            // When discovery finds a device
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                Log.i(TAG, "Device name: " + device.getName());
+                Log.i(TAG, "Device address: " + device.getAddress());
+            }
+            if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
+                Log.i(TAG, "onResume: Discovery Started");
+            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+                Log.i(TAG, "onResume: Discovery Finished");
+            }
+        }
+    };
+
 //    public Date getGpsTime() {
 //        return gpsTime;
 //    }
@@ -188,12 +207,10 @@ public class BLTManager {
     public void setState(int state) {
         Log.d(TAG, "setState() " + mState + " -> " + state);
         mState = state;
-
     }
 
     public void setBTName(String id) {
         Log.d(TAG, "Phone Id: " + id);
-        //BLUETOOTH_ADAPTER_NAME = id;
         mBluetoothAdapter.setName(id);
     }
 
@@ -289,13 +306,10 @@ public class BLTManager {
     private class AcceptThread extends Thread {
         private final BluetoothServerSocket mmServerSocket;
         private String mSocketType;
-
         private AcceptThread(boolean secure) {
             // Use a temporary object that is later assigned to mmServerSocket
             // because mmServerSocket is final.
             BluetoothServerSocket tmp = null;
-
-
             mSocketType = secure ? "Secure" : "Insecure";
             // Create a new listening server socket
             Log.i(TAG, "NAME: " + NAME);
@@ -319,7 +333,6 @@ public class BLTManager {
             Log.d(TAG, "Socket Type: " + mSocketType +
                     " BEGIN mAcceptThread" + this);
             setName("AcceptThread" + mSocketType);
-            //BusNotificationUtil.sharedInstance().postNotification(new BLTListeningNotification());
             // Keep listening until exception occurs or a socket is returned.
             while (mState != STATE_CONNECTED) {
                 try {

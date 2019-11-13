@@ -127,6 +127,7 @@ public class BitmapSaveUtil {
                                        final boolean isLandscape) {
 
         SimpleDateFormat millisecondFormat =  new SimpleDateFormat("dd/MM/yyyy HH:mm:ss.SSS");
+        final SimpleDateFormat timeStampFormat =  new SimpleDateFormat("dd/MM/yyyy HH:mm:ssZ");
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(FILE_DATE_FORMAT);
 
         long timeDelta = BLTManager.sharedInstance().getTimeDelta();
@@ -135,6 +136,7 @@ public class BitmapSaveUtil {
         long correctedMilli = timeNow + timeDelta;
 
         final Date correctedDate = new Date(correctedMilli);
+        
         Log.d(TAG, "Time Corrected: " + correctedDate.toString());
         //String halfAppend = "";
         //boolean useHalfAppend = (SettingsUtil.sharedInstance().getPictureFrequency() % 1000 > 0);
@@ -232,7 +234,8 @@ public class BitmapSaveUtil {
                         @Override
                         public void run() {
                             String _file = file.getAbsolutePath();
-                            EXIFUtil.sharedInstance().geoTagFile(_file, systemTime, location);
+                            final String timeStamp = timeStampFormat.format(systemTime);
+                            EXIFUtil.sharedInstance().geoTagFile(_file, timeStamp, location);
                         }
                     };
                     if (BLTManager.sharedInstance().getState() == 3) {
@@ -274,8 +277,8 @@ public class BitmapSaveUtil {
         int messageLength = MessageUtil.sharedInstance().getMessageLength();
         int payload = messageLength + 21 + photo.size();
         MessageUtil.sharedInstance().setPayload(payload);
-        ByteArrayOutputStream m = MessageUtil.sharedInstance().getMessage();
-        BLTManager.sharedInstance().sendMessge(m);
+        ByteArrayOutputStream msg = MessageUtil.sharedInstance().getMessage();
+        BLTManager.sharedInstance().sendMessge(msg);
         long finish = System.currentTimeMillis();
         Log.d(TAG, "Message send time: " + (finish - start));
     }
