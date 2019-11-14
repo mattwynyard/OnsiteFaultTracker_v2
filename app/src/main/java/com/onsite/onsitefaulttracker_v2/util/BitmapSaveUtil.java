@@ -59,6 +59,8 @@ public class BitmapSaveUtil {
 
     private AtomicInteger count;
 
+    private String correctedDateString;
+
     private Calendar mCal = Calendar.getInstance();
     private TimeZone mTz = mCal.getTimeZone();
     //String mMesageDateString;
@@ -114,6 +116,21 @@ public class BitmapSaveUtil {
         }
     }
 
+    public String getDateString() {
+        Date dateTime = correctDateTime();
+        final SimpleDateFormat timeStampFormat =  new SimpleDateFormat("dd/MM/yyyy HH:mm:ssZ");
+        String correctedDateString = timeStampFormat.format(dateTime);
+
+        return correctedDateString;
+    }
+
+    private Date correctDateTime() {
+        long timeDelta = BLTManager.sharedInstance().getTimeDelta();
+        long timeNow = System.currentTimeMillis();
+        long correctedMilli = timeNow + timeDelta;
+        return new Date(correctedMilli);
+    }
+
     /**
      * Saves a bitmap to storage taking in a temp number for now for the filename
      *
@@ -129,13 +146,7 @@ public class BitmapSaveUtil {
         SimpleDateFormat millisecondFormat =  new SimpleDateFormat("dd/MM/yyyy HH:mm:ss.SSS");
         final SimpleDateFormat timeStampFormat =  new SimpleDateFormat("dd/MM/yyyy HH:mm:ssZ");
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(FILE_DATE_FORMAT);
-
-        long timeDelta = BLTManager.sharedInstance().getTimeDelta();
-
-        long timeNow = System.currentTimeMillis();
-        long correctedMilli = timeNow + timeDelta;
-
-        final Date correctedDate = new Date(correctedMilli);
+        final Date correctedDate = correctDateTime();
         
         Log.d(TAG, "Time Corrected: " + correctedDate.toString());
         //String halfAppend = "";
@@ -145,8 +156,8 @@ public class BitmapSaveUtil {
         //String.format("%06d", count);
         String bitmapCount = String.format("%06d", count);
 
-        final Date systemTime = new Date(timeNow);
-        String correctedDateString = simpleDateFormat.format(correctedDate);
+        final Date systemTime = new Date(System.currentTimeMillis());
+        correctedDateString = simpleDateFormat.format(correctedDate);
         final String mesageDateString = millisecondFormat.format(systemTime);
 
         String cameraIdPrefix = SettingsUtil.sharedInstance().getCameraId();

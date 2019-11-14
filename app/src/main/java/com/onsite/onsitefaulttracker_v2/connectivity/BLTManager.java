@@ -15,6 +15,7 @@ import com.onsite.onsitefaulttracker_v2.model.notifcation_events.BLTStopRecordin
 import com.onsite.onsitefaulttracker_v2.util.BatteryUtil;
 import com.onsite.onsitefaulttracker_v2.util.BitmapSaveUtil;
 import com.onsite.onsitefaulttracker_v2.util.BusNotificationUtil;
+import com.onsite.onsitefaulttracker_v2.util.LogUtil;
 import com.onsite.onsitefaulttracker_v2.util.MessageUtil;
 import com.onsite.onsitefaulttracker_v2.util.ThreadUtil;
 import com.onsite.onsitefaulttracker_v2.model.notifcation_events.BLTConnectedNotification;
@@ -220,6 +221,7 @@ public class BLTManager {
             mSocket.getOutputStream().flush();
         } catch (IOException e) {
             e.printStackTrace();
+            Log.e(TAG, e.getMessage());
         }
     }
 
@@ -247,6 +249,7 @@ public class BLTManager {
 
         } catch (IOException e) {
             e.printStackTrace();
+            Log.e(TAG, e.getMessage());
         }
     }
 
@@ -295,6 +298,7 @@ public class BLTManager {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            Log.e(TAG, e.getMessage());
         }
     }
 
@@ -325,6 +329,7 @@ public class BLTManager {
                 }
             } catch (IOException e) {
                 Log.e(TAG, "Socket Type: " + mSocketType + "listen() failed", e);
+                LogUtil.sharedInstance().appendLog("Socket Type: " + mSocketType + "listen() failed");
             }
             mmServerSocket = tmp;
         }
@@ -341,6 +346,7 @@ public class BLTManager {
                     setState(STATE_LISTEN);
                 } catch (IOException e) {
                     Log.e(TAG, "Socket's accept() method failed", e);
+                    LogUtil.sharedInstance().appendLog("Socket's accept() method failed");
                     break;
                 }
                 if (mSocket != null) {
@@ -394,6 +400,7 @@ public class BLTManager {
                 restartBLTConnection();
             } catch (IOException e) {
                 e.printStackTrace();
+                Log.e(TAG, e.getMessage());
             }
         }
         /**
@@ -457,6 +464,7 @@ public class BLTManager {
                     }
                 } catch (IOException e) { //connection was lost
                     e.printStackTrace();
+                    Log.e(TAG, e.getMessage());
                 } finally {
                     BusNotificationUtil.sharedInstance()
                             .postNotification(new BLTStopRecordingEvent());

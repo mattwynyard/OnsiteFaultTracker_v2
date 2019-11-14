@@ -40,6 +40,7 @@ import com.onsite.onsitefaulttracker_v2.model.notifcation_events.BLTListeningNot
 
 import com.onsite.onsitefaulttracker_v2.util.BatteryUtil;
 import com.onsite.onsitefaulttracker_v2.util.BusNotificationUtil;
+import com.onsite.onsitefaulttracker_v2.util.LogUtil;
 import com.onsite.onsitefaulttracker_v2.util.RecordUtil;
 import com.onsite.onsitefaulttracker_v2.util.SettingsUtil;
 import com.squareup.otto.Subscribe;
@@ -463,6 +464,7 @@ public class HomeFragment extends BaseFragment {
      * Action when the user clicks
      */
     private void onNewRecordClicked() {
+
         if (requestStoragePermission()) {
             return;
         }
@@ -702,9 +704,7 @@ public class HomeFragment extends BaseFragment {
      */
     private void createRecord(final String recordName) {
         if (RecordUtil.sharedInstance().createNewRecord(recordName)) {
-//            if (mListener != null) {
-//                mListener.onNewRecord();
-//            }
+            //LogUtil.sharedInstance().createLog();
         } else {
             new AlertDialog.Builder(getActivity())
                     .setTitle(getString(R.string.create_record_error_title))
@@ -782,9 +782,6 @@ public class HomeFragment extends BaseFragment {
         if (mContinueRecordButton.isEnabled()) {
             onContinueButtonClicked();
         }
-//        } else {
-//            onNewRecordClicked();
-//        }
     }
 
 

@@ -27,6 +27,7 @@ import com.onsite.onsitefaulttracker_v2.util.BatteryUtil;
 import com.onsite.onsitefaulttracker_v2.util.BitmapSaveUtil;
 import com.onsite.onsitefaulttracker_v2.util.BusNotificationUtil;
 import com.onsite.onsitefaulttracker_v2.util.CameraUtil;
+import com.onsite.onsitefaulttracker_v2.util.LogUtil;
 import com.onsite.onsitefaulttracker_v2.util.MessageUtil;
 import com.onsite.onsitefaulttracker_v2.util.RecordUtil;
 import com.onsite.onsitefaulttracker_v2.util.SettingsUtil;
@@ -314,18 +315,17 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
      */
     private void onRecordingError() {
         stopRecording();
-
+        LogUtil.sharedInstance().appendLog("Recording error: " + mRecord.photoCount);
         if (BLTManager.sharedInstance().getState() == 3) {
             //BLTManager.sharedInstance().sendPhoto("E:CAMERA ERROR,", null);
             MessageUtil.sharedInstance().setError(3);
-        } else {
 
+        } else {
             Log.e(TAG, "*******************************************************");
             Log.e(TAG, "* ERROR                                               *");
             Log.e(TAG, "*******************************************************");
             Log.e(TAG, "* RECORDING ERROR                                     *");
             Log.e(TAG, "*******************************************************");
-
 //            new AlertDialog.Builder(getActivity())
 //                    .setTitle(getString(R.string.record_error_title))
 //                    .setMessage(getString(R.string.record_error_message))
@@ -351,6 +351,7 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
      * Stops recording and displays an error to the user.
      */
     private void onOutOfDiskSpaceError() {
+        LogUtil.sharedInstance().appendLog("No disk space");
         if (BLTManager.sharedInstance().getState() == 3) {
             //BLTManager.sharedInstance().sendPhoto("M:OUT OF CAMERA SPACE,", null);
             MessageUtil.sharedInstance().setError(2);
@@ -380,6 +381,7 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
             Log.e(TAG, "*******************************************************");
             Log.e(TAG, "* NO DISK SPACE LEFT                                  *");
             Log.e(TAG, "*******************************************************");
+
         }
     }
 
@@ -471,12 +473,14 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
     private void startRecording() {
         if (!mRecording) {
             Log.i(TAG, "Start recording called");
+            LogUtil.sharedInstance().appendLog("Start recording called " + mRecord.photoCount);
             mStartedRecordingTime = new Date().getTime();
             mRecording = true;
            // MessageUtil.sharedInstance().setRecording(true);
             scheduleNextFrame();
         } else {
             Log.i(TAG, "Start recording called but already recording");
+            LogUtil.sharedInstance().appendLog("Start recording called but already recording -> " + mRecord.photoCount);
         }
     }
 
@@ -487,6 +491,7 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
     private void stopRecording() {
         if (mRecording) {
             Log.i(TAG, "Stop recording called");
+            LogUtil.sharedInstance().appendLog("Stop recording called " + mRecord.photoCount);
             mRecording = false;
             if (BLTManager.sharedInstance().getState() == 3) {
                 BLTManager.sharedInstance().sendMessge("NOTRECORDING,");
@@ -497,6 +502,7 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
             //TcpConnection.getSharedInstance().setRecording(false);
         } else {
             Log.i(TAG, "Stop recording called but already recording");
+            LogUtil.sharedInstance().appendLog("Stop recording called but not recording" + mRecord.photoCount);
         }
     }
 
@@ -518,6 +524,7 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
     @Override
     public void onCameraError(int error) {
         Log.d(TAG, "Camera Error");
+        LogUtil.sharedInstance().appendLog("Camera Error" + mRecord.photoCount);
 
     }
 
