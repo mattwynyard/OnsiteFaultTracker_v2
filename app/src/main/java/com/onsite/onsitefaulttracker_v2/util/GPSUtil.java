@@ -280,7 +280,7 @@ public class GPSUtil implements LocationListener {
                 super.onFirstFix(ttffMillis);
                 Log.d(TAG, "First fix: " + String.valueOf(ttffMillis));
                 mFix = true;
-                LogUtil.sharedInstance().appendLog("Succesfull satellite fix!");
+                //LogUtil.sharedInstance().appendLog("Succesfull satellite fix!");
                 Toast.makeText(mContext, "Succesfull satellite fix!",
                         Toast.LENGTH_SHORT).show();
             }
@@ -289,7 +289,7 @@ public class GPSUtil implements LocationListener {
             public void onStarted() {
                 super.onStarted();
                 Log.d(TAG, "GPS_EVENT_STARTED...");
-                LogUtil.sharedInstance().appendLog("Acquiring satellite fix...");
+                //LogUtil.sharedInstance().appendLog("Acquiring satellite fix...");
                 Toast.makeText(mContext, "Acquiring satellite fix...",
                         Toast.LENGTH_SHORT).show();
 
@@ -297,7 +297,7 @@ public class GPSUtil implements LocationListener {
             @Override
             public void onStopped() {
                 super.onStopped();
-                LogUtil.sharedInstance().appendLog("GPS_EVENT_STOPPED...");
+                //LogUtil.sharedInstance().appendLog("GPS_EVENT_STOPPED...");
                 Log.d(TAG, "GPS_EVENT_STOPPED...");
 
             }

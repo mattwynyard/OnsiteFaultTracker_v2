@@ -228,21 +228,17 @@ public class BLTManager {
     public void sendMessge(final String message) {
 
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        //byte[] messageBytes = message.getBytes(StandardCharsets.US_ASCII);
         float currentBatteryLevel = BatteryUtil.sharedInstance().getBatteryLevel();
         int batteryLevel = Math.round(currentBatteryLevel);
-
         MessageUtil.sharedInstance().setRecording("N");
         MessageUtil.sharedInstance().setBattery(batteryLevel);
         MessageUtil.sharedInstance().setError(0);
         MessageUtil.sharedInstance().setMessage(message);
         MessageUtil.sharedInstance().setPhoto(null);
         int messageLength = MessageUtil.sharedInstance().getMessageLength();
-        //int photoLength = 0;
         int payload = messageLength + 21;
         MessageUtil.sharedInstance().setPayload(payload);
         bytes = MessageUtil.sharedInstance().getMessage();
-
         try {
             bytes.writeTo(mSocket.getOutputStream());
             mSocket.getOutputStream().flush();
@@ -255,7 +251,6 @@ public class BLTManager {
 
     public void sendPhoto(final String header, final ByteArrayOutputStream photoBytes) {
         try {
-
             ByteArrayOutputStream headerOut = new ByteArrayOutputStream();
             byte[] ascii = header.getBytes(StandardCharsets.US_ASCII);
             byte[] prefix;
@@ -264,7 +259,6 @@ public class BLTManager {
                 prefix = start.getBytes(StandardCharsets.US_ASCII);
                 headerOut.write(prefix);
                 headerOut.write(ascii);
-                //headerOut.write(0x0a);
                 Log.i(TAG, "Bytes Sent: " + (prefix.length + ascii.length));
                 headerOut.writeTo(mSocket.getOutputStream());
             } else {
@@ -273,17 +267,11 @@ public class BLTManager {
                 String start = "P:";
                 prefix = start.getBytes(StandardCharsets.US_ASCII);
                 byte[] photo = photoBytes.toByteArray();
-
                 headerOut.write(prefix); //ascii 2bytes
-                //Log.d(TAG, "Size: " + headerOut.size());
                 headerOut.write(messageLength); //int
-                //Log.d(TAG, "Size: " + headerOut.size());
                 headerOut.write(ascii); //ascii
-                //Log.d(TAG, "Size: " + headerOut.size());
                 headerOut.write(photoLength); //int
-                //Log.d(TAG, "Size: " + headerOut.size());
                 headerOut.write(photo);
-
                 lock.lock();
                 try {
                     headerOut.writeTo(mSocket.getOutputStream());
@@ -443,23 +431,15 @@ public class BLTManager {
                             int minute = Integer.valueOf(time[5]);
                             int second = Integer.valueOf(time[6]);
                             int millisecond = Integer.valueOf(time[7].substring(0, 2));
-
-                            //Date gpsTime = new Date(year, month - 1, day, hour, minute, second);
                             DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss.SSS");
                             Calendar gpsTime = Calendar.getInstance();
                             gpsTime.set(year, month - 1, day, hour, minute, second);
-                            //gpsTime.set(Calendar.MILLISECOND, 0);
                             Log.d(TAG, "gpsTime: " + dateFormat.format(gpsTime.getTime()));
-
                             Calendar nowTime = Calendar.getInstance();
                             Log.d(TAG, "nowTime: " + dateFormat.format(nowTime.getTime()));
-
                             timeDelta =  ChronoUnit.MILLIS.between(nowTime.toInstant(), gpsTime.toInstant());
-
                             Log.d(TAG, "timeDelta: " + timeDelta);
-
                         } else {
-                            //System.out.println(line);
                         }
                     }
                 } catch (IOException e) { //connection was lost
