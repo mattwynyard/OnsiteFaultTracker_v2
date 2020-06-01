@@ -556,10 +556,10 @@ public class CameraUtil {
 
             //TODO temphack to determine which phone we are using
             cameras = manager.getCameraIdList();
-
-
             if (cameras.length == 5) {
                 camera = "3"; //huawei
+            } else if (cameras.length == 4) {
+                    camera = "2"; //galaxy 10 -> 0 normal camera and 2 wide-angle
             } else {
                 camera = "0"; //galaxy s7
             }

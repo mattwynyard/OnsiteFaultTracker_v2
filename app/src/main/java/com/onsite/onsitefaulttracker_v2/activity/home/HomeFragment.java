@@ -347,6 +347,7 @@ public class HomeFragment extends BaseFragment {
                 Log.i(TAG, "Advertising accept");
                 mAdvertising = true;
                 BusNotificationUtil.sharedInstance().postNotification(new BLTListeningNotification());
+                requestPhonePermission();
                 setBTName();
                 startBluetooth();
                 //startGPS();
@@ -423,6 +424,8 @@ public class HomeFragment extends BaseFragment {
                 return "C9";
             case "R58M45X7LDB":
                 return "C6";
+            case "unknown": //temp hack galaxy 10 build.getSerial() = unknown
+                return "C7";
             default:
                 return "";
         }
@@ -704,7 +707,7 @@ public class HomeFragment extends BaseFragment {
      */
     private void createRecord(final String recordName) {
         if (RecordUtil.sharedInstance().createNewRecord(recordName)) {
-            //LogUtil.sharedInstance().createLog();
+            LogUtil.sharedInstance().createLog();
         } else {
             new AlertDialog.Builder(getActivity())
                     .setTitle(getString(R.string.create_record_error_title))
