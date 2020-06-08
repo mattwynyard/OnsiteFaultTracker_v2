@@ -563,7 +563,7 @@ public class CameraUtil {
             } else {
                 camera = "0"; //galaxy s7
             }
-            Log.i(TAG, "Cameras" + cameras);
+            Log.d(TAG, "Cameras" + cameras);
             characteristics = manager.getCameraCharacteristics(camera);
 
             //CameraCharacteristics characteristics2 = manager.getCameraCharacteristics("1");
