@@ -560,6 +560,8 @@ public class CameraUtil {
                 camera = "3"; //huawei
             } else if (cameras.length == 4) {
                     camera = "2"; //galaxy 10 -> 0 normal camera and 2 wide-angle
+            } else if (cameras.length == 6) {
+                camera = "2"; //galaxy 10 5g -> 0 normal camera and 2 wide-angle
             } else {
                 camera = "0"; //galaxy s7
             }

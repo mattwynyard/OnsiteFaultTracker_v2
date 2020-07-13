@@ -47,7 +47,6 @@ public class GPSUtil implements LocationListener {
 
     // The tag name for this utility class
     private static final String TAG = GPSUtil.class.getSimpleName();
-
     // The application context
     private Context mContext;
 
@@ -153,7 +152,6 @@ public class GPSUtil implements LocationListener {
     LocationListener mLocationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
-            //Log.v("Listener: ", "Location changed");
             double latitude = location.getLatitude();
             double longitude = location.getLongitude();
             if (mLocationManager != null) {
@@ -188,8 +186,6 @@ public class GPSUtil implements LocationListener {
         }
     };
 
-
-
     public int getSatellites() {
         return mSatellites;
     }
@@ -211,8 +207,6 @@ public class GPSUtil implements LocationListener {
             criteria.setPowerRequirement(Criteria.POWER_HIGH);
             criteria.setAltitudeRequired(true);
             criteria.setSpeedRequired(false);
-            //criteria.setCostAllowed(true);
-
             criteria.setBearingRequired(true);
 
             mLocationManager.requestLocationUpdates(
@@ -280,7 +274,6 @@ public class GPSUtil implements LocationListener {
                 super.onFirstFix(ttffMillis);
                 Log.d(TAG, "First fix: " + String.valueOf(ttffMillis));
                 mFix = true;
-                //LogUtil.sharedInstance().appendLog("Succesfull satellite fix!");
                 Toast.makeText(mContext, "Succesfull satellite fix!",
                         Toast.LENGTH_SHORT).show();
             }
@@ -314,8 +307,7 @@ public class GPSUtil implements LocationListener {
             return;
         }
         mLocationManager.registerGnssStatusCallback(gnssStatusCallBack);
-        //mLocationManager.registerGnssNavigationMessageCallback(gnssMessageCallback);
-        //mLocationManager.registerGnssMeasurementsCallback(gnssMeasurementsCallback);
+
     }
 
     public boolean getStatus() {

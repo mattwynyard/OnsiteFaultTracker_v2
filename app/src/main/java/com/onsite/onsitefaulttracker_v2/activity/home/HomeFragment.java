@@ -45,6 +45,7 @@ import com.onsite.onsitefaulttracker_v2.util.RecordUtil;
 import com.onsite.onsitefaulttracker_v2.util.SettingsUtil;
 import com.squareup.otto.Subscribe;
 
+import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -317,11 +318,7 @@ public class HomeFragment extends BaseFragment {
                 Log.i(TAG, "Starting listen");
             }
         }
-
     }
-
-
-
     /**
      * Captures users selection results from pop-up message window
      * @param requestCode - the type of service requested
@@ -350,7 +347,6 @@ public class HomeFragment extends BaseFragment {
                 requestPhonePermission();
                 setBTName();
                 startBluetooth();
-                //startGPS();
             } else {
                 mAdvertising = false;
                 BusNotificationUtil.sharedInstance().postNotification(new BLTNotConnectedNotification());
@@ -373,7 +369,7 @@ public class HomeFragment extends BaseFragment {
     private boolean requestPhonePermission() {
         if (getActivity().checkSelfPermission(Manifest.permission.READ_PHONE_STATE)
                 == PackageManager.PERMISSION_GRANTED) {
-            mSerialNumber = Build.getSerial();
+            mSerialNumber = getSerialNumber();
             Log.d(TAG, "Serial number: " + mSerialNumber);
             return true;
 
@@ -395,7 +391,7 @@ public class HomeFragment extends BaseFragment {
                     // All good!
                     if (getActivity().checkSelfPermission(Manifest.permission.READ_PHONE_STATE)
                             == PackageManager.PERMISSION_GRANTED) {
-                        mSerialNumber = Build.getSerial();
+                        mSerialNumber = getSerialNumber();
                         Log.d(TAG, "Serial number: " + mSerialNumber);
                     }
                 } else {
@@ -404,6 +400,42 @@ public class HomeFragment extends BaseFragment {
                 }
                 return;
         }
+    }
+
+    public String getSerialNumber() {
+        String serialNumber;
+        try {
+            Class<?> c = Class.forName("android.os.SystemProperties");
+            Method get = c.getMethod("get", String.class);
+            serialNumber = (String) get.invoke(c, "gsm.sn1");
+
+            if (serialNumber.equals(""))
+                serialNumber = (String) get.invoke(c, "ril.serialnumber");
+
+            if (serialNumber.equals(""))
+                serialNumber = (String) get.invoke(c, "ro.serialno");
+
+            if (serialNumber.equals(""))
+                serialNumber = (String) get.invoke(c, "sys.serialnumber");
+
+            if (serialNumber.equals(""))
+                if (getActivity().checkSelfPermission(Manifest.permission.READ_PHONE_STATE)
+                        == PackageManager.PERMISSION_GRANTED) {
+                    serialNumber = Build.getSerial();
+                }
+            // If none of the methods above worked
+            if (serialNumber.equals(Build.UNKNOWN))
+                serialNumber = null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            serialNumber = null;
+        }
+        return serialNumber;
+    }
+
+    private void setBTName() {
+        String btname = "OnSite_BLT_Adapter_" + mCamera;
+        BLTManager.sharedInstance().setBTName(btname);
     }
 
     private String getCameraId() {
@@ -418,14 +450,20 @@ public class HomeFragment extends BaseFragment {
                 return "C3";
             case "ce0416048828440503":
                 return "C4";
-            case "ce12160cf826108d0c":
+            case "R58J31Z5CPP":
                 return "C5";
             case "LHS7N18A17009063":
                 return "C9";
             case "R58M45X7LDB":
                 return "C6";
-            case "unknown": //temp hack galaxy 10 build.getSerial() = unknown
-                return "C7";
+            case "R39M30GGB1L":
+                return "C10";
+            case "R3CM40GK3JN":
+                return "C11";
+            case "R3CM406J5HP":
+                return "C12";
+            case "R3CM508HCVZ":
+                return "C13";
             default:
                 return "";
         }
@@ -474,7 +512,7 @@ public class HomeFragment extends BaseFragment {
 
         if (getActivity().checkSelfPermission(Manifest.permission.READ_PHONE_STATE)
                 == PackageManager.PERMISSION_GRANTED) {
-            mSerialNumber = Build.getSerial();
+            mSerialNumber = getSerialNumber();
             Log.d(TAG, "Serial number: " + mSerialNumber);
         }
 
@@ -682,11 +720,6 @@ public class HomeFragment extends BaseFragment {
 //                keyboard.showSoftInput(recordNameInput, 0);
 //            }
 //        }, 300);
-    }
-
-    private void setBTName() {
-        String btname = "OnSite_BLT_Adapter_" + mCamera;
-        BLTManager.sharedInstance().setBTName(btname);
     }
 
     /**

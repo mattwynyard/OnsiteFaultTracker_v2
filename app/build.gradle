@@ -22,15 +22,15 @@ android {
         config {
         }
     }
-    compileSdkVersion 28
-    buildToolsVersion '28.0.3'
+    compileSdkVersion 29
+    buildToolsVersion '29.0.2'
     project.archivesBaseName = "OnsiteFaultTracker"
     defaultConfig {
         applicationId "com.onsite.onsitefaulttracker"
         minSdkVersion 26
-        targetSdkVersion 28
+        targetSdkVersion 29
         versionCode 3
-        versionName "2.1.1"
+        versionName "2.2.0"
     }
     buildTypes {
         release {

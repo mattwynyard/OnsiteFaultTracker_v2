@@ -43,7 +43,6 @@ public class BLTManager {
     // Application context
     private Application mApplicationContext;
     private BluetoothAdapter mBluetoothAdapter;
-
     private static final UUID UUID_UNSECURE = UUID.fromString("00030000-0000-1000-8000-00805F9B34FB");
     private static final String NAME = "OnsiteBluetoothserver";
 
@@ -61,16 +60,10 @@ public class BLTManager {
     public static final int STATE_CONNECTED = 3;  // now connected to a remote device
     public static final int STATE_TIMEOUT = 4;  // now connected to a remote device
     public static final int STATE_NOTENABLED = 9;  // bluetooth not enabled on phone
-
-    //private static Date gpsTime;
     public static long timeDelta;
-
     private ExecutorService mThreadPool;
-    ReentrantLock lock = new ReentrantLock();
-
+    private ReentrantLock lock = new ReentrantLock();
     private int mState;    /**
-
-
 
      * initialize the BLTManager class,  to be called once from the application class
      *
@@ -184,10 +177,6 @@ public class BLTManager {
             }
         }
     };
-
-//    public Date getGpsTime() {
-//        return gpsTime;
-//    }
 
     public long getTimeDelta() {
         return timeDelta;
