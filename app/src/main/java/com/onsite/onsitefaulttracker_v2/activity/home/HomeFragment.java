@@ -441,29 +441,29 @@ public class HomeFragment extends BaseFragment {
     private String getCameraId() {
         switch (mSerialNumber) {
             case "ad071603301688a406":
-                return "C0";
+                return "C00";
             case "ad07160328c52f53ed":
-                return "C1";
+                return "C01";
             case "988627395552575855":
-                return "C2";
+                return "C02";
             case "98862738354837315a":
-                return "C3";
+                return "C03";
             case "ce0416048828440503":
-                return "C4";
+                return "C04";
             case "R58J31Z5CPP":
-                return "C5";
-            case "LHS7N18A17009063":
-                return "C9";
+                return "C05";
             case "R58M45X7LDB":
-                return "C6";
+                return "C06";
+            case "LHS7N18A17009063":
+                return "C07";
             case "R39M30GGB1L":
-                return "C10";
+                return "C08"; //galaxy s10
             case "R3CM40GK3JN":
-                return "C11";
+                return "C09";//galaxy s10 5g
             case "R3CM406J5HP":
-                return "C12";
+                return "C10";//galaxy s10 5g
             case "R3CM508HCVZ":
-                return "C13";
+                return "C11";//galaxy s10 5g
             default:
                 return "";
         }
