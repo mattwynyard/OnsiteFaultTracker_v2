@@ -67,6 +67,7 @@
     <string name="not_enough_storage_title">Warning</string>
     <string name="not_enough_storage_message">There is not enough available storage space to complete the selected days work.</string>
     <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
     <string name="continue_anyway">Continue Anyway</string>
 
     <!-- Record Fragment Strings -->

@@ -424,11 +424,31 @@ public class HomeFragment extends BaseFragment {
                     serialNumber = Build.getSerial();
                 }
             // If none of the methods above worked
-            if (serialNumber.equals(Build.UNKNOWN))
-                serialNumber = null;
+            if (serialNumber.equals(Build.UNKNOWN)) {
+                new AlertDialog.Builder(getActivity())
+                        .setTitle("Error")
+                        .setMessage("Could not get phone serial number")
+                        .setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                            }
+                        });
+                serialNumber = "CXX";
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
-            serialNumber = null;
+            new AlertDialog.Builder(getActivity())
+                    .setTitle("Error")
+                    .setMessage("Could not get phone serial number")
+                    .setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    });
+            serialNumber = "";
         }
         return serialNumber;
     }
@@ -451,7 +471,7 @@ public class HomeFragment extends BaseFragment {
             case "ce0416048828440503":
                 return "C04";
             case "R58J31Z5CPP":
-                return "C05";
+                return "C05"; //galaxy s7
             case "R58M45X7LDB":
                 return "C06";
             case "LHS7N18A17009063":
@@ -464,8 +484,10 @@ public class HomeFragment extends BaseFragment {
                 return "C10";//galaxy s10 5g
             case "R3CM508HCVZ":
                 return "C11";//galaxy s10 5g
+            case "R3CM40CBM0T":
+                return "C12";//galaxy s10 5g
             default:
-                return "";
+                return "CXX";
         }
     }
 
