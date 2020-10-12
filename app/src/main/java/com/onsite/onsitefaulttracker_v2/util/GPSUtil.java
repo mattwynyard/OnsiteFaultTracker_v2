@@ -47,40 +47,29 @@ public class GPSUtil implements LocationListener {
 
     // The tag name for this utility class
     private static final String TAG = GPSUtil.class.getSimpleName();
-
     // The application context
     private Context mContext;
-
     //    // The static instance of this class which will be initialized once then reused
 //    // throughout the app
 //    private static GPSUtil sGPSUtil;
     // Shared Instance, to be initialized once and used throughout the application
     private static GPSUtil sSharedInstance;
-
     private static GPSUtil sGPSUtil;
-
     // flag for GPS status
     public boolean isGPSEnabled = false;
-
     private LocationManager mLocationManager;
     private Location mLocation;
     //private LocationListener mLocationListener;
     private double latitude; // latitude
     private double longitude; // longitude
-
     private OnNmeaMessageListener mNmeaListener;
-
     // The minimum distance to change Updates in meters
     private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 1; // 1 meters
-
     // The minimum time between updates in milliseconds
     private static final long MIN_TIME_BW_UPDATES = 1000; // 1 sec
-
     public static final int PERMISSIONS_REQUEST_LOCATION = 10;
-
     private boolean mFix;
     private int mSatellites;
-
     private ThreadPoolExecutor mThreadPoolExecutor;
     private ArrayBlockingQueue<Runnable> queue;
 
@@ -115,16 +104,7 @@ public class GPSUtil implements LocationListener {
             // for ActivityCompat#requestPermissions for more details.
             //return;
         }
-        //mLocationManager.addNmeaListener(mNmeaListener);
-        //mThreadPool = ThreadUtil.threadPool(5);
-//        com.onsite.onsitefaulttracker.util.ThreadFactoryUtil factory = new com.onsite.onsitefaulttracker.util.ThreadFactoryUtil("geotag");
-//        //mThreadPool  = Executors.newFixedThreadPool(10);
-//        queue = new ArrayBlockingQueue<Runnable>(10);
-//        mThreadPoolExecutor = new ThreadPoolExecutor(5, 20, 60, TimeUnit.SECONDS,
-//                queue, factory,
-//                new ThreadPoolExecutor.CallerRunsPolicy());
-
-        checkGPS();
+         checkGPS();
     }
 
     /**
@@ -153,9 +133,10 @@ public class GPSUtil implements LocationListener {
     LocationListener mLocationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
-            //Log.v("Listener: ", "Location changed");
             double latitude = location.getLatitude();
             double longitude = location.getLongitude();
+            long gpsTime = location.getTime();
+            //Log.d("Gps time:", String.valueOf(gpsTime));
             if (mLocationManager != null) {
                 if (ActivityCompat.checkSelfPermission( mContext, Manifest.permission
                         .ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat
@@ -168,9 +149,7 @@ public class GPSUtil implements LocationListener {
                 //Log.d(TAG, "Location Manager Null");
             }
             mLocation = location;
-
         }
-
 
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -187,8 +166,6 @@ public class GPSUtil implements LocationListener {
 
         }
     };
-
-
 
     public int getSatellites() {
         return mSatellites;
@@ -211,8 +188,6 @@ public class GPSUtil implements LocationListener {
             criteria.setPowerRequirement(Criteria.POWER_HIGH);
             criteria.setAltitudeRequired(true);
             criteria.setSpeedRequired(false);
-            //criteria.setCostAllowed(true);
-
             criteria.setBearingRequired(true);
 
             mLocationManager.requestLocationUpdates(
@@ -225,23 +200,7 @@ public class GPSUtil implements LocationListener {
             @Override
             public void onGnssMeasurementsReceived(GnssMeasurementsEvent eventArgs) {
 
-                GnssClock clock = eventArgs.getClock();
-                long timeNanos = Math.round(Double.valueOf(clock.getTimeNanos()) - (clock.getFullBiasNanos() - clock.getBiasNanos()));
-                Date gpsTime = new Date();
-                Calendar calendar = Calendar.getInstance();
-                calendar.set(Calendar.YEAR, 1980);
-                calendar.set(Calendar.MONTH, Calendar.JANUARY);
-                calendar.set(Calendar.DAY_OF_MONTH, 6);
-                calendar.set(Calendar.SECOND, 0);
-                calendar.set(Calendar.MINUTE, 0);
-                calendar.set(Calendar.HOUR, 0);
-                long calTime = calendar.getTimeInMillis();
-                long diffTime = Math.round(timeNanos / 1000) - calTime;
-                gpsTime.setTime(Math.round(diffTime));
-                SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss.SSS");
 
-                String dateString = dateFormat.format(gpsTime);
-                Log.d(TAG, "GPS time: " + dateString);
             }
 
             public void onStatusChanged(int status) {
@@ -252,7 +211,7 @@ public class GPSUtil implements LocationListener {
         GnssNavigationMessage.Callback gnssMessageCallback = new GnssNavigationMessage.Callback() {
             @Override
             public void onGnssNavigationMessageReceived(GnssNavigationMessage event) {
-
+                Log.d(TAG, "Navigation Message received)");
             }
 
             public void onStatusChanged(int status) {
@@ -280,7 +239,6 @@ public class GPSUtil implements LocationListener {
                 super.onFirstFix(ttffMillis);
                 Log.d(TAG, "First fix: " + String.valueOf(ttffMillis));
                 mFix = true;
-                //LogUtil.sharedInstance().appendLog("Succesfull satellite fix!");
                 Toast.makeText(mContext, "Succesfull satellite fix!",
                         Toast.LENGTH_SHORT).show();
             }
@@ -314,8 +272,8 @@ public class GPSUtil implements LocationListener {
             return;
         }
         mLocationManager.registerGnssStatusCallback(gnssStatusCallBack);
-        //mLocationManager.registerGnssNavigationMessageCallback(gnssMessageCallback);
         //mLocationManager.registerGnssMeasurementsCallback(gnssMeasurementsCallback);
+        //mLocationManager.registerGnssNavigationMessageCallback(gnssMessageCallback);
     }
 
     public boolean getStatus() {

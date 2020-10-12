@@ -23,14 +23,14 @@ android {
         }
     }
     compileSdkVersion 28
-    buildToolsVersion '28.0.3'
+    buildToolsVersion '28.0.2'
     project.archivesBaseName = "OnsiteFaultTracker"
     defaultConfig {
         applicationId "com.onsite.onsitefaulttracker"
         minSdkVersion 26
         targetSdkVersion 28
         versionCode 3
-        versionName "2.1.1"
+        versionName "2.2.2"
     }
     buildTypes {
         release {
