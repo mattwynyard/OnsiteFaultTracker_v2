@@ -690,58 +690,6 @@ public class HomeFragment extends BaseFragment {
         if (bluetooth) {
             mListener.onNewRecord();
         }
-
-//
-//        final AlertDialog d = new AlertDialog.Builder(getActivity())
-//                .setTitle(getString(R.string.new_record_dialog_title))
-//                .setMessage(String.format(getString(R.string.new_record_dialog_message), todaysDisplayDate))
-//                .setView(recordNameLayout)
-//                .setPositiveButton(getString(android.R.string.ok), null)
-//                .setNegativeButton(getString(android.R.string.cancel), null)
-//                .create();
-//
-//        recordNameInput.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-//            @Override
-//            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-//                if (!TextUtils.isEmpty(recordNameInput.getText().toString())) {
-//                    createRecord(recordNameInput.getText().toString());
-//                    d.dismiss();
-//                } else {
-//                    showNameMustBeEntered();
-//                }
-//                return true;
-//            }
-//        });
-//
-//        // Set action on button clicks,  This is so the default button click action
-//        d.setOnShowListener(new DialogInterface.OnShowListener() {
-//            @Override
-//            public void onShow(DialogInterface dialog) {
-//                Button positiveButton = d.getButton(AlertDialog.BUTTON_POSITIVE);
-//                positiveButton.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View view) {
-//                        if (!TextUtils.isEmpty(recordNameInput.getText().toString())) {
-//                            createRecord(recordNameInput.getText().toString());
-//                            d.dismiss();
-//                        } else {
-//                            showNameMustBeEntered();
-//                        }
-//                    }
-//                });
-//            }
-//        });
-//        d.show();
-//
-//        // Show the keyboard as the name dialog pops up
-//        ThreadUtil.executeOnMainThreadDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                InputMethodManager keyboard = (InputMethodManager)
-//                        getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-//                keyboard.showSoftInput(recordNameInput, 0);
-//            }
-//        }, 300);
     }
 
     /**

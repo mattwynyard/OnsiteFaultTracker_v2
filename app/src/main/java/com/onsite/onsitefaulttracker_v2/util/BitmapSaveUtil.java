@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 
 import com.onsite.onsitefaulttracker_v2.connectivity.BLTManager;
@@ -20,6 +21,7 @@ import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.time.Clock;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -155,8 +157,8 @@ public class BitmapSaveUtil {
         int count = totalBitMapCount;
         //String.format("%06d", count);
         String bitmapCount = String.format("%06d", count);
-
         final Date systemTime = new Date(System.currentTimeMillis());
+
         correctedDateString = simpleDateFormat.format(correctedDate);
         final String mesageDateString = millisecondFormat.format(systemTime);
 
@@ -221,14 +223,14 @@ public class BitmapSaveUtil {
                     bitmapToSave.recycle();
 
                     fOutputStream.flush();
-                    Log.d(TAG, "file channel bytes: " +
-                            ((FileOutputStream) fOutputStream).getChannel().size());
+                    //Log.d(TAG, "file channel bytes: " +
+                           // ((FileOutputStream) fOutputStream).getChannel().size());
                     final long jpegBytes = ((FileOutputStream) fOutputStream).getChannel().size();
                     fOutputStream.close();
 
                     long finish = System.currentTimeMillis();
-                    Log.d(TAG, "Photo save time: " + (finish - start));
-                    Log.d(TAG, "Bitmap count: " + totalBitMapCount);
+                    //Log.d(TAG, "Photo save time: " + (finish - start));
+                    //Log.d(TAG, "Bitmap count: " + totalBitMapCount);
                     totalBitMapTime += (finish - start);
                     Double time = (double)totalBitMapTime / totalBitMapCount;
                     final Double avgSaveTime = new BigDecimal(time).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
@@ -245,7 +247,7 @@ public class BitmapSaveUtil {
                         @Override
                         public void run() {
                             String _file = file.getAbsolutePath();
-                            final String timeStamp = timeStampFormat.format(systemTime);
+                            final String timeStamp = timeStampFormat.format(correctedDate);
                             EXIFUtil.sharedInstance().geoTagFile(_file, timeStamp, location);
                         }
                     };
@@ -253,8 +255,8 @@ public class BitmapSaveUtil {
                         mThreadPool.execute(task1);
                     }
                     mThreadPool.execute(task2);
-                    Log.d(TAG,mThreadPool.toString());
-                    Log.d(TAG, "Avergage Photo save time: " + (double)(totalBitMapTime / totalBitMapCount));
+                    //Log.d(TAG,mThreadPool.toString());
+                    //Log.d(TAG, "Avergage Photo save time: " + (double)(totalBitMapTime / totalBitMapCount));
 
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
@@ -281,7 +283,7 @@ public class BitmapSaveUtil {
     private void sendMessage(String date, String filename, ByteArrayOutputStream photo,
                              Double saveTime, long frequency, long jpegBytes) {
         long start = System.currentTimeMillis();
-        Log.d(TAG, "JPEG written to disk");
+        //Log.d(TAG, "JPEG written to disk");
         String message = buildMessage(date, filename, saveTime, frequency, jpegBytes);
         MessageUtil.sharedInstance().setMessage(message);
         MessageUtil.sharedInstance().setPhoto(photo.toByteArray());
@@ -291,7 +293,7 @@ public class BitmapSaveUtil {
         ByteArrayOutputStream msg = MessageUtil.sharedInstance().getMessage();
         BLTManager.sharedInstance().sendMessge(msg);
         long finish = System.currentTimeMillis();
-        Log.d(TAG, "Message send time: " + (finish - start));
+        //Log.d(TAG, "Message send time: " + (finish - start));
     }
 
     /**

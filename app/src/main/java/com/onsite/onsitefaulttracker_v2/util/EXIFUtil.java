@@ -3,6 +3,7 @@ package com.onsite.onsitefaulttracker_v2.util;
 import android.content.Context;
 import android.location.Location;
 import android.media.ExifInterface;
+import android.util.Log;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -60,9 +61,11 @@ public class EXIFUtil {
 
     public void geoTagFile(String path, String timeStamp, Location location) {
         String datum = "WGS_84";
+
         Double latitude_ref;
         Double longitude_ref;
         Double altitude_ref;
+        Long fixTime;
         Double bearing_ref;
         if (location == null) {
             latitude_ref = -36.939318;
@@ -70,10 +73,17 @@ public class EXIFUtil {
             altitude_ref = 39.0;
             bearing_ref = 0.0;
         } else {
+            int satellites = GPSUtil.sharedInstance().getSatellites();
+            Log.d("Satellite: " , String.valueOf(satellites));
             latitude_ref = location.getLatitude();
             longitude_ref = location.getLongitude();
             altitude_ref = location.getAltitude();
             bearing_ref = Double.valueOf(location.getBearing());
+            fixTime = location.getTime();
+            Date date = new Date(fixTime);
+            final SimpleDateFormat timeStampFormat =  new SimpleDateFormat("dd/MM/yyyy HH:mm:ssZ");
+            Log.d("Fix time: ", String.valueOf(timeStampFormat.format(date)));
+            Log.d("Time stamp: ", timeStamp);
         }
         String bearing = formatEXIFDouble(bearing_ref, 100);
         String latitude = DMS(latitude_ref, 10000);
