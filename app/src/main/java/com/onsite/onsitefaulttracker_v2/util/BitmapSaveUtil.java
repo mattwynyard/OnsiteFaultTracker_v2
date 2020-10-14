@@ -151,16 +151,13 @@ public class BitmapSaveUtil {
         final Date correctedDate = correctDateTime();
         
         Log.d(TAG, "Time Corrected: " + correctedDate.toString());
-        //String halfAppend = "";
-        //boolean useHalfAppend = (SettingsUtil.sharedInstance().getPictureFrequency() % 1000 > 0);
         totalBitMapCount++;
         int count = totalBitMapCount;
-        //String.format("%06d", count);
         String bitmapCount = String.format("%06d", count);
         final Date systemTime = new Date(System.currentTimeMillis());
 
         correctedDateString = simpleDateFormat.format(correctedDate);
-        final String mesageDateString = millisecondFormat.format(systemTime);
+        final String mesageDateString = millisecondFormat.format(systemTime); //sent in message
 
         String cameraIdPrefix = SettingsUtil.sharedInstance().getCameraId();
         if (cameraIdPrefix == null) {
@@ -173,10 +170,7 @@ public class BitmapSaveUtil {
         if (availableSpace <= 1024) {
             return SaveBitmapResult.Error;
         }
-
-        Bitmap resizedBitmap;
         final Location location = GPSUtil.sharedInstance().getLocation();
-
         ThreadUtil.executeOnNewThread(new Runnable() {
         //Runnable task = new Runnable() {
             @Override
@@ -190,7 +184,6 @@ public class BitmapSaveUtil {
                 try {
                     long start = System.currentTimeMillis();
                     OutputStream fOutputStream = new FileOutputStream(file);
-
                     float reductionScale = CalculationUtil.sharedInstance()
                             .estimateScaleValueForImageSize();
                     int outWidth = Math.round(bitmapToSave.getHeight() / widthDivisor);
@@ -198,7 +191,6 @@ public class BitmapSaveUtil {
                     Bitmap sizedBmp = Bitmap.createScaledBitmap(bitmapToSave,
                             Math.round(outWidth * reductionScale), Math.round(outHeight *
                                     reductionScale), true);
-
                     Matrix matrix = new Matrix();
                     if (isLandscape) {
                         matrix.postRotate(-90);
@@ -221,16 +213,10 @@ public class BitmapSaveUtil {
                     rotatedBitmap.recycle();
                     resizedBitmap.recycle();
                     bitmapToSave.recycle();
-
                     fOutputStream.flush();
-                    //Log.d(TAG, "file channel bytes: " +
-                           // ((FileOutputStream) fOutputStream).getChannel().size());
                     final long jpegBytes = ((FileOutputStream) fOutputStream).getChannel().size();
                     fOutputStream.close();
-
                     long finish = System.currentTimeMillis();
-                    //Log.d(TAG, "Photo save time: " + (finish - start));
-                    //Log.d(TAG, "Bitmap count: " + totalBitMapCount);
                     totalBitMapTime += (finish - start);
                     Double time = (double)totalBitMapTime / totalBitMapCount;
                     final Double avgSaveTime = new BigDecimal(time).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
@@ -255,9 +241,6 @@ public class BitmapSaveUtil {
                         mThreadPool.execute(task1);
                     }
                     mThreadPool.execute(task2);
-                    //Log.d(TAG,mThreadPool.toString());
-                    //Log.d(TAG, "Avergage Photo save time: " + (double)(totalBitMapTime / totalBitMapCount));
-
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                     return;
@@ -283,7 +266,6 @@ public class BitmapSaveUtil {
     private void sendMessage(String date, String filename, ByteArrayOutputStream photo,
                              Double saveTime, long frequency, long jpegBytes) {
         long start = System.currentTimeMillis();
-        //Log.d(TAG, "JPEG written to disk");
         String message = buildMessage(date, filename, saveTime, frequency, jpegBytes);
         MessageUtil.sharedInstance().setMessage(message);
         MessageUtil.sharedInstance().setPhoto(photo.toByteArray());

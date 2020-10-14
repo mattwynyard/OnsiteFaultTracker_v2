@@ -127,45 +127,8 @@ public class EXIFUtil {
         } catch (IOException e) {
             e.printStackTrace();
         }
-//
-//            Log.d(TAG, "Wrote geotag" + path);
-//            Log.d(TAG, "Latitude " + exif.getAttribute(ExifInterface.TAG_GPS_LATITUDE));
-//            Log.d(TAG, "Longitude " + exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE));
-//            Log.d(TAG, "Altitude " + exif.getAttribute(ExifInterface.TAG_GPS_ALTITUDE));
-
     }
 
-    private String getDateTimeStamp(Date date, String type) {
-        //Date date = new Date(gpsTime);
-        DateFormat dateformater = new SimpleDateFormat("yyyyMMddHHmmssZZZZZ");
-        dateformater.setTimeZone(TimeZone.getDefault());
-        String timestamp = dateformater.format(date);
-
-        if (type.equals("date")) {
-            StringBuilder s = new StringBuilder();
-            String year = timestamp.substring(0,4);
-            String month = timestamp.substring(4,6);
-            String day = timestamp.substring(6,8);
-            s.append(day);
-            s.append(":");
-            s.append(month);
-            s.append(":");
-            s.append(year);
-            return s.toString();
-        } else {
-            StringBuilder s = new StringBuilder();
-            String hour = timestamp.substring(8,10);
-            String minutes = timestamp.substring(10,12);
-            String seconds = timestamp.substring(12,14);
-            //String zone = timestamp.substring(14,20);
-            s.append(hour);
-            s.append(":");
-            s.append(minutes);
-            s.append(":");
-            s.append(seconds);
-            return s.toString();
-        }
-    }
     /**
      * Converts a double value to the exif format
      * @param x - the number to convert
