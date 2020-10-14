@@ -146,7 +146,7 @@ public class BitmapSaveUtil {
                                        final boolean isLandscape) {
 
         SimpleDateFormat millisecondFormat =  new SimpleDateFormat("dd/MM/yyyy HH:mm:ss.SSS");
-        final SimpleDateFormat timeStampFormat =  new SimpleDateFormat("dd/MM/yyyy HH:mm:ssZ");
+        final SimpleDateFormat timeStampFormat =  new SimpleDateFormat("yyyy:MM:dd HH:mm:ss");
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(FILE_DATE_FORMAT);
         final Date correctedDate = correctDateTime();
         

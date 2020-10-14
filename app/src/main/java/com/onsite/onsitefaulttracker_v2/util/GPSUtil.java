@@ -70,9 +70,6 @@ public class GPSUtil implements LocationListener {
     public static final int PERMISSIONS_REQUEST_LOCATION = 10;
     private boolean mFix;
     private int mSatellites;
-    private ThreadPoolExecutor mThreadPoolExecutor;
-    private ArrayBlockingQueue<Runnable> queue;
-
 
     /**
      * initializes GPSUtil.
@@ -133,10 +130,6 @@ public class GPSUtil implements LocationListener {
     LocationListener mLocationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
-            double latitude = location.getLatitude();
-            double longitude = location.getLongitude();
-            long gpsTime = location.getTime();
-            //Log.d("Gps time:", String.valueOf(gpsTime));
             if (mLocationManager != null) {
                 if (ActivityCompat.checkSelfPermission( mContext, Manifest.permission
                         .ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat
@@ -144,7 +137,8 @@ public class GPSUtil implements LocationListener {
                         != PackageManager.PERMISSION_GRANTED) {
                     return;
                 }
-                mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                location = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
             } else {
                 //Log.d(TAG, "Location Manager Null");
             }
@@ -222,9 +216,7 @@ public class GPSUtil implements LocationListener {
         GnssStatus.Callback gnssStatusCallBack = new GnssStatus.Callback() {
             @Override
             public void onSatelliteStatusChanged(GnssStatus status) {
-
                 int satelliteCount = status.getSatelliteCount();
-                //Log.d(TAG, "Satellites: " + satelliteCount);
                 mSatellites = 0;
                 for (int i = 0; i < satelliteCount; i++) {
                     if (status.usedInFix(i)) {

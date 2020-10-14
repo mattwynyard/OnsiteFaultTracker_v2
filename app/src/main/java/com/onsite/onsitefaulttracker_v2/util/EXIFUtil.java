@@ -8,6 +8,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
@@ -59,45 +60,58 @@ public class EXIFUtil {
         }
     }
 
-    public void geoTagFile(String path, String timeStamp, Location location) {
+    public void geoTagFile(String path, String correctedTimeStamp, Location location) {
         String datum = "WGS_84";
-
+        Log.d("Timestamp: " , correctedTimeStamp);
         Double latitude_ref;
         Double longitude_ref;
         Double altitude_ref;
-        Long fixTime;
+        Long locationFixTime = location.getTime();
+        Float speed = 0.0f;
+        Float accuracy = 0.0f;
         Double bearing_ref;
         if (location == null) {
             latitude_ref = -36.939318;
             longitude_ref = 174.892701;
             altitude_ref = 39.0;
             bearing_ref = 0.0;
+
         } else {
-            int satellites = GPSUtil.sharedInstance().getSatellites();
-            Log.d("Satellite: " , String.valueOf(satellites));
+            locationFixTime = location.getTime();
             latitude_ref = location.getLatitude();
             longitude_ref = location.getLongitude();
             altitude_ref = location.getAltitude();
             bearing_ref = Double.valueOf(location.getBearing());
-            fixTime = location.getTime();
-            Date date = new Date(fixTime);
-            final SimpleDateFormat timeStampFormat =  new SimpleDateFormat("dd/MM/yyyy HH:mm:ssZ");
-            Log.d("Fix time: ", String.valueOf(timeStampFormat.format(date)));
-            Log.d("Time stamp: ", timeStamp);
+            speed = location.getSpeed();
+            accuracy = location.getAccuracy();
+
         }
+        int satellites = GPSUtil.sharedInstance().getSatellites();
+
+        String satStr = String.valueOf(satellites);
+        String speedStr = formatEXIFFloat(speed, 10);
+        String dop = formatEXIFFloat(accuracy, 10);
+        Date fixTimeStamp = new Date(locationFixTime);
+        final SimpleDateFormat dateStampFormat =  new SimpleDateFormat("yyyy:mm:dd");
+        final SimpleDateFormat timeStampFormat =  new SimpleDateFormat("HH:mm:ss");
+
+        String fixDate = dateStampFormat.format(fixTimeStamp);
+        String fixTime = timeStampFormat.format(fixTimeStamp);
         String bearing = formatEXIFDouble(bearing_ref, 100);
         String latitude = DMS(latitude_ref, 10000);
         String longitude = DMS(longitude_ref, 10000);
         String altitude = formatEXIFDouble(altitude_ref, 100);
         writeGeoTag(path, latitude, latitude_ref, longitude, longitude_ref, altitude, altitude_ref,
-                bearing, timeStamp, datum);
-    }
+                bearing, speedStr, satStr, dop, datum, fixDate, fixTime, correctedTimeStamp);
+        }
+
     //--EXIF FUNCTIONS--
 //TODO fix for negative altitudes
     public void writeGeoTag(final String path, final String latitude, final Double latitude_ref,
-                            final String longitude, final Double longitude_ref,
-                            final String altitude, final Double altitude_ref, final String bearing,
-                            final String timeStamp, final String datum) {
+                            final String longitude, final Double longitude_ref, final String altitude,
+                            final Double altitude_ref, final String bearing, final String speed, final String satellites,
+                            final String dop, final String datum, final String fixDate,
+                            final String fixTime, final String timeStamp) {
 
         try {
             ExifInterface exif = new ExifInterface(path);
@@ -116,19 +130,26 @@ public class EXIFUtil {
             exif.setAttribute(ExifInterface.TAG_GPS_IMG_DIRECTION,
                     bearing);
             exif.setAttribute(ExifInterface.TAG_GPS_SPEED,
-                    "0/10");
+                    speed);
             exif.setAttribute(ExifInterface.TAG_GPS_DOP,
-                    "999/10");
+                    dop);
             exif.setAttribute(ExifInterface.TAG_GPS_SATELLITES,
-                    "0");
+                    satellites);
             exif.setAttribute(ExifInterface.TAG_DATETIME, timeStamp);
             exif.setAttribute(ExifInterface.TAG_GPS_MAP_DATUM, datum);
+            exif.setAttribute(ExifInterface.TAG_GPS_DATESTAMP, fixDate);
+            exif.setAttribute(ExifInterface.TAG_GPS_TIMESTAMP, fixTime);
             exif.saveAttributes();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    private String formatEXIFFloat(float number, int precision) {
+        Float d = Math.abs(number) * precision;
+        int x = (int)Math.floor(d);
+        return String.format("%d/" + precision, x);
+    }
     /**
      * Converts a double value to the exif format
      * @param x - the number to convert
@@ -137,8 +158,8 @@ public class EXIFUtil {
      */
     private String formatEXIFDouble(double x, int precision) {
         Double d = Math.abs(x) * precision;
-        int altitude = (int)Math.floor(d);
-        return String.format("%d/" + String.valueOf(precision), altitude);
+        int n = (int)Math.floor(d);
+        return String.format("%d/" + precision, n);
     }
     /**
      * Converts decimal lat/long coordinate to degrees, minutes, seconds. The returned string is in
@@ -154,6 +175,28 @@ public class EXIFUtil {
         int minutes = (int) Math.floor(((d - (double)degrees) * 60));
         int seconds = (int)(((((d - (double)degrees) * 60) - (double)minutes) * 60) * precision);
         return String.format("%d/1,%d/1,%d/" + precision, degrees, minutes, seconds);
+    }
+
+    private class EXIFTag {
+
+        String path;
+        String latitude;
+        Double latitude_ref;
+        String longitude;
+        Double longitude_ref;
+        String altitude;
+        Double altitude_ref;
+        String bearing;
+        String datum;
+        String systemDate;
+        String fixDate;
+        String systemTime;
+        String fixTime;
+
+        public EXIFTag() {
+
+        }
+
     }
 
 
