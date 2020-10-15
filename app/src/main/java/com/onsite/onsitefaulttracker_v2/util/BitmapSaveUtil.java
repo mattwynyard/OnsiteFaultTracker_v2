@@ -60,13 +60,9 @@ public class BitmapSaveUtil {
     }
 
     private AtomicInteger count;
-
     private String correctedDateString;
-
     private Calendar mCal = Calendar.getInstance();
     private TimeZone mTz = mCal.getTimeZone();
-    //String mMesageDateString;
-
     // The format of file names when converted from a date
     private static final String FILE_DATE_FORMAT = "yyMMdd_HHmmss";
 
@@ -99,7 +95,6 @@ public class BitmapSaveUtil {
         mCal = Calendar.getInstance();
         mTz = mCal.getTimeZone();
         ThreadFactoryUtil factory = new ThreadFactoryUtil("message", NORM_PRIORITY);
-        //mThreadPool = Executors.newSingleThreadExecutor(factory);
         mThreadPool = new ThreadPoolExecutor(2, 2, 5, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<Runnable>(), factory,
                 new ThreadPoolExecutor.CallerRunsPolicy());
@@ -155,10 +150,8 @@ public class BitmapSaveUtil {
         int count = totalBitMapCount;
         String bitmapCount = String.format("%06d", count);
         final Date systemTime = new Date(System.currentTimeMillis());
-
         correctedDateString = simpleDateFormat.format(correctedDate);
         final String mesageDateString = millisecondFormat.format(systemTime); //sent in message
-
         String cameraIdPrefix = SettingsUtil.sharedInstance().getCameraId();
         if (cameraIdPrefix == null) {
             cameraIdPrefix = "NOID";

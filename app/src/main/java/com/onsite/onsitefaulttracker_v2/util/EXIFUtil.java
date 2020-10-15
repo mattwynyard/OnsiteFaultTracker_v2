@@ -87,14 +87,12 @@ public class EXIFUtil {
 
         }
         int satellites = GPSUtil.sharedInstance().getSatellites();
-
         String satStr = String.valueOf(satellites);
         String speedStr = formatEXIFFloat(speed, 10);
         String dop = formatEXIFFloat(accuracy, 10);
         Date fixTimeStamp = new Date(locationFixTime);
-        final SimpleDateFormat dateStampFormat =  new SimpleDateFormat("yyyy:mm:dd");
+        final SimpleDateFormat dateStampFormat =  new SimpleDateFormat("yyyy:MM:dd");
         final SimpleDateFormat timeStampFormat =  new SimpleDateFormat("HH:mm:ss");
-
         String fixDate = dateStampFormat.format(fixTimeStamp);
         String fixTime = timeStampFormat.format(fixTimeStamp);
         String bearing = formatEXIFDouble(bearing_ref, 100);
