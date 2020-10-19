@@ -17,16 +17,13 @@ public class EXIFUtil {
 
     // The tag name for this utility class
     private static final String TAG = EXIFUtil.class.getSimpleName();
-
     // The application context
     private Context mContext;
-
     //    // The static instance of this class which will be initialized once then reused
 //    // throughout the app
 //    private static GPSUtil sGPSUtil;
     // Shared Instance, to be initialized once and used throughout the application
     private static EXIFUtil sSharedInstance;
-
     private static EXIFUtil sEXIFUtil;
 
     /**

@@ -65,7 +65,8 @@ public class BitmapSaveUtil {
     private TimeZone mTz = mCal.getTimeZone();
     // The format of file names when converted from a date
     private static final String FILE_DATE_FORMAT = "yyMMdd_HHmmss";
-
+    private static final String MILLI_DATE_FORMAT = "dd/MM/yyyy HH:mm:ss.SSS";
+    private static final String TIME_STAMP__FORMAT = "yyyy:MM:dd HH:mm:ss";
     // A static instance of the bitmap save utilities
     private static BitmapSaveUtil sBitmapSaveUtil;
 
@@ -113,11 +114,11 @@ public class BitmapSaveUtil {
         }
     }
 
+    //used by logUtil
     public String getDateString() {
         Date dateTime = correctDateTime();
         final SimpleDateFormat timeStampFormat =  new SimpleDateFormat("dd/MM/yyyy HH:mm:ssZ");
         String correctedDateString = timeStampFormat.format(dateTime);
-
         return correctedDateString;
     }
 
@@ -140,18 +141,17 @@ public class BitmapSaveUtil {
                                        final float widthDivisor,
                                        final boolean isLandscape) {
 
-        SimpleDateFormat millisecondFormat =  new SimpleDateFormat("dd/MM/yyyy HH:mm:ss.SSS");
-        final SimpleDateFormat timeStampFormat =  new SimpleDateFormat("yyyy:MM:dd HH:mm:ss");
+        final SimpleDateFormat millisecondFormat =  new SimpleDateFormat(MILLI_DATE_FORMAT);
+        final SimpleDateFormat timeStampFormat =  new SimpleDateFormat(TIME_STAMP__FORMAT);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(FILE_DATE_FORMAT);
         final Date correctedDate = correctDateTime();
-        
-        Log.d(TAG, "Time Corrected: " + correctedDate.toString());
+        final Location location = GPSUtil.sharedInstance().getLocation();
+        Long gpsTime = location.getTime();
+        final String gpsTimeStamp = millisecondFormat.format(gpsTime); //sent in message
         totalBitMapCount++;
         int count = totalBitMapCount;
         String bitmapCount = String.format("%06d", count);
-        final Date systemTime = new Date(System.currentTimeMillis());
         correctedDateString = simpleDateFormat.format(correctedDate);
-        final String mesageDateString = millisecondFormat.format(systemTime); //sent in message
         String cameraIdPrefix = SettingsUtil.sharedInstance().getCameraId();
         if (cameraIdPrefix == null) {
             cameraIdPrefix = "NOID";
@@ -163,13 +163,13 @@ public class BitmapSaveUtil {
         if (availableSpace <= 1024) {
             return SaveBitmapResult.Error;
         }
-        final Location location = GPSUtil.sharedInstance().getLocation();
+
         ThreadUtil.executeOnNewThread(new Runnable() {
-        //Runnable task = new Runnable() {
             @Override
             public void run() {
                 String path = RecordUtil.sharedInstance().getPathForRecord(record);
-                File folder = new File(path);if (!folder.exists()) {
+                File folder = new File(path);
+                if (!folder.exists()) {
                     Log.e(TAG, "Error saving snap, Record path does not exist");
                     return;
                 }
@@ -214,12 +214,11 @@ public class BitmapSaveUtil {
                     Double time = (double)totalBitMapTime / totalBitMapCount;
                     final Double avgSaveTime = new BigDecimal(time).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
                     final long frequency = SettingsUtil.sharedInstance().getPictureFrequency();
-                    photo.size();
-
+                    final String timeStampMilli = millisecondFormat.format(correctedDate);
                     task1 = new Runnable() {
                         @Override
                         public void run() {
-                            sendMessage(mesageDateString, filename, photo, avgSaveTime, frequency, jpegBytes);
+                            sendMessage(gpsTimeStamp, filename, photo, avgSaveTime, frequency, jpegBytes);
                         }
                     };
                     task2 = new Runnable() {
@@ -244,7 +243,6 @@ public class BitmapSaveUtil {
                 bitmapToSave.recycle();
             }
         });
-
         if (availableSpace <= LOW_DISK_SPACE_THRESHOLD) {
             return SaveBitmapResult.SaveLowDiskSpace;
         } else {
@@ -258,7 +256,6 @@ public class BitmapSaveUtil {
 
     private void sendMessage(String date, String filename, ByteArrayOutputStream photo,
                              Double saveTime, long frequency, long jpegBytes) {
-        long start = System.currentTimeMillis();
         String message = buildMessage(date, filename, saveTime, frequency, jpegBytes);
         MessageUtil.sharedInstance().setMessage(message);
         MessageUtil.sharedInstance().setPhoto(photo.toByteArray());
@@ -267,8 +264,6 @@ public class BitmapSaveUtil {
         MessageUtil.sharedInstance().setPayload(payload);
         ByteArrayOutputStream msg = MessageUtil.sharedInstance().getMessage();
         BLTManager.sharedInstance().sendMessge(msg);
-        long finish = System.currentTimeMillis();
-        //Log.d(TAG, "Message send time: " + (finish - start));
     }
 
     /**
@@ -290,17 +285,16 @@ public class BitmapSaveUtil {
         messageString.append(frequency + "|");
         messageString.append(jpegBytes + ",");
         String message = messageString.toString();
-        Log.d(TAG, "String builder path: " +  message);
         return message;
     }
 
-    /**
-     *  sends a message and photo through bluetooth, see sendPhoto method in BLTManger for the
-     *  actual algorithm for perapring the data
-     * @param message - the message to be sent
-     * @param photo - a byte array containing the photo data
-     */
-    private void sendPhoto(final String message, final ByteArrayOutputStream photo) {
-        BLTManager.sharedInstance().sendPhoto(message, photo);
-    }
+//    /**
+//     *  sends a message and photo through bluetooth, see sendPhoto method in BLTManger for the
+//     *  actual algorithm for perapring the data
+//     * @param message - the message to be sent
+//     * @param photo - a byte array containing the photo data
+//     */
+//    private void sendPhoto(final String message, final ByteArrayOutputStream photo) {
+//        BLTManager.sharedInstance().sendPhoto(message, photo);
+//    }
 }

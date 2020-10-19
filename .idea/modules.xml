@@ -2,8 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/OnsiteFaultTracker_v2.iml" filepath="$PROJECT_DIR$/OnsiteFaultTracker_v2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/OnsiteFaultTracker_v2.iml" filepath="$PROJECT_DIR$/OnsiteFaultTracker_v2.iml" group="OnsiteFaultTracker_v2" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/OnsiteFaultTracker_v2.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/OnsiteFaultTracker_v2.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/app.iml" group="OnsiteFaultTracker_v2/app" />
     </modules>
   </component>
 </project>

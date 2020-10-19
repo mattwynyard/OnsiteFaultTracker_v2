@@ -335,7 +335,6 @@ public class BLTManager {
                     BusNotificationUtil.sharedInstance().postNotification(new BLTConnectedNotification());
                     try {
                         mWriterOut = new PrintWriter(mSocket.getOutputStream(), true);
-
                         sendMessge("CONNECTED,");
                     } catch (IOException e) {
                         e.printStackTrace();

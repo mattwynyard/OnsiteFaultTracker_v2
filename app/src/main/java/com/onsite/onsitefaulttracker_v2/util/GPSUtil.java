@@ -49,14 +49,10 @@ public class GPSUtil implements LocationListener {
     private static final String TAG = GPSUtil.class.getSimpleName();
     // The application context
     private Context mContext;
-    //    // The static instance of this class which will be initialized once then reused
-//    // throughout the app
-//    private static GPSUtil sGPSUtil;
-    // Shared Instance, to be initialized once and used throughout the application
     private static GPSUtil sSharedInstance;
     private static GPSUtil sGPSUtil;
     // flag for GPS status
-    public boolean isGPSEnabled = false;
+    public boolean isGPSEnabled;
     private LocationManager mLocationManager;
     private Location mLocation;
     //private LocationListener mLocationListener;
@@ -101,7 +97,7 @@ public class GPSUtil implements LocationListener {
             // for ActivityCompat#requestPermissions for more details.
             //return;
         }
-         checkGPS();
+         intialiseGPS();
     }
 
     /**
@@ -145,6 +141,8 @@ public class GPSUtil implements LocationListener {
             mLocation = location;
         }
 
+
+
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {
 
@@ -161,11 +159,13 @@ public class GPSUtil implements LocationListener {
         }
     };
 
+
+
     public int getSatellites() {
         return mSatellites;
     }
 
-    public void checkGPS() {
+    public void intialiseGPS() {
         if (ActivityCompat.checkSelfPermission(mContext,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED &&
@@ -174,9 +174,6 @@ public class GPSUtil implements LocationListener {
                         PackageManager.PERMISSION_GRANTED) {// getting GPS status
             isGPSEnabled = mLocationManager
                     .isProviderEnabled(LocationManager.GPS_PROVIDER);
-
-            Log.v("isGPSEnabled", "= " + isGPSEnabled);
-
             Criteria criteria = new Criteria();
             criteria.setAccuracy(Criteria.ACCURACY_FINE);
             criteria.setPowerRequirement(Criteria.POWER_HIGH);
@@ -188,70 +185,73 @@ public class GPSUtil implements LocationListener {
                     LocationManager.GPS_PROVIDER,
                     MIN_TIME_BW_UPDATES,
                     MIN_DISTANCE_CHANGE_FOR_UPDATES, mLocationListener);
+            mLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        } else {
+
         }
 
-        GnssMeasurementsEvent.Callback gnssMeasurementsCallback = new GnssMeasurementsEvent.Callback() {
-            @Override
-            public void onGnssMeasurementsReceived(GnssMeasurementsEvent eventArgs) {
+    GnssMeasurementsEvent.Callback gnssMeasurementsCallback = new GnssMeasurementsEvent.Callback() {
+        @Override
+        public void onGnssMeasurementsReceived(GnssMeasurementsEvent eventArgs) {
 
 
-            }
+        }
 
-            public void onStatusChanged(int status) {
+        public void onStatusChanged(int status) {
 
-            }
-        };
+        }
+    };
 
-        GnssNavigationMessage.Callback gnssMessageCallback = new GnssNavigationMessage.Callback() {
-            @Override
-            public void onGnssNavigationMessageReceived(GnssNavigationMessage event) {
-                Log.d(TAG, "Navigation Message received)");
-            }
+    GnssNavigationMessage.Callback gnssMessageCallback = new GnssNavigationMessage.Callback() {
+        @Override
+        public void onGnssNavigationMessageReceived(GnssNavigationMessage event) {
+            Log.d(TAG, "Navigation Message received)");
+        }
 
-            public void onStatusChanged(int status) {
+        public void onStatusChanged(int status) {
 
-            }
-        };
+        }
+    };
 
-        GnssStatus.Callback gnssStatusCallBack = new GnssStatus.Callback() {
-            @Override
-            public void onSatelliteStatusChanged(GnssStatus status) {
-                int satelliteCount = status.getSatelliteCount();
-                mSatellites = 0;
-                for (int i = 0; i < satelliteCount; i++) {
-                    if (status.usedInFix(i)) {
-                        mSatellites++;
-                    }
+    GnssStatus.Callback gnssStatusCallBack = new GnssStatus.Callback() {
+        @Override
+        public void onSatelliteStatusChanged(GnssStatus status) {
+            int satelliteCount = status.getSatelliteCount();
+            mSatellites = 0;
+            for (int i = 0; i < satelliteCount; i++) {
+                if (status.usedInFix(i)) {
+                    mSatellites++;
                 }
-                //Log.d(TAG, "Satellites used in fix: " + mSatellites);
             }
+            Log.d(TAG, "Satellites used in fix: " + mSatellites);
+        }
 
-            @Override
-            public void onFirstFix(int ttffMillis) {
-                super.onFirstFix(ttffMillis);
-                Log.d(TAG, "First fix: " + String.valueOf(ttffMillis));
-                mFix = true;
-                Toast.makeText(mContext, "Succesfull satellite fix!",
-                        Toast.LENGTH_SHORT).show();
-            }
+        @Override
+        public void onFirstFix(int ttffMillis) {
+            super.onFirstFix(ttffMillis);
+            Log.d(TAG, "First fix: " + String.valueOf(ttffMillis));
+            mFix = true;
+            Toast.makeText(mContext, "Succesfull satellite fix!",
+                    Toast.LENGTH_SHORT).show();
+        }
 
-            @Override
-            public void onStarted() {
-                super.onStarted();
-                Log.d(TAG, "GPS_EVENT_STARTED...");
-                //LogUtil.sharedInstance().appendLog("Acquiring satellite fix...");
-                Toast.makeText(mContext, "Acquiring satellite fix...",
-                        Toast.LENGTH_SHORT).show();
+        @Override
+        public void onStarted() {
+            super.onStarted();
+            Log.d(TAG, "GPS_EVENT_STARTED...");
+            //LogUtil.sharedInstance().appendLog("Acquiring satellite fix...");
+            Toast.makeText(mContext, "Acquiring satellite fix...",
+                    Toast.LENGTH_SHORT).show();
 
-            }
-            @Override
-            public void onStopped() {
-                super.onStopped();
-                //LogUtil.sharedInstance().appendLog("GPS_EVENT_STOPPED...");
-                Log.d(TAG, "GPS_EVENT_STOPPED...");
+        }
+        @Override
+        public void onStopped() {
+            super.onStopped();
+            //LogUtil.sharedInstance().appendLog("GPS_EVENT_STOPPED...");
+            Log.d(TAG, "GPS_EVENT_STOPPED...");
 
-            }
-        };
+        }
+    };
         if (ActivityCompat.checkSelfPermission(this.mContext, Manifest.permission.
                 ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -268,20 +268,18 @@ public class GPSUtil implements LocationListener {
         //mLocationManager.registerGnssNavigationMessageCallback(gnssMessageCallback);
     }
 
-    public boolean getStatus() {
+    public boolean hasFix() {
         return mFix;
     }
 
     public Location getLocation() {
         if (isGPSEnabled) {
-            if (mLocation != null) {
-            } else {
+            if (mLocation == null) {
                 Log.d(TAG, "Location Null");
                 mLocation = new Location(LocationManager.GPS_PROVIDER);
             }
         } else {
             Log.d(TAG, "GPS not enabled");
-
         }
         return mLocation;
     }
