@@ -207,7 +207,9 @@ public class HomeFragment extends BaseFragment {
     @Override
     public void onResume() {
         super.onResume();
-        updateButtonStates();
+        if (BLTManager.sharedInstance().getState() != 3) {
+            updateButtonStates();
+        }
     }
 
     /**
@@ -641,10 +643,8 @@ public class HomeFragment extends BaseFragment {
     @Subscribe
     public void onBLTConnectedEvent(BLTConnectedNotification event) {
         // Set connection status text to connected
-        //mContinueRecordButton.setEnabled(false);
-        //mNewRecordButton.setEnabled(false);
-       // mSubmitRecordButton.setEnabled(false);
-        //mPreviousRecordsButton.setEnabled(false);
+        mContinueRecordButton.setEnabled(false);
+        mSubmitRecordButton.setEnabled(false);
         mConnectionStatusTextView.setText(getString(R.string.BTconnected));
 
     }
@@ -667,11 +667,9 @@ public class HomeFragment extends BaseFragment {
      */
     @Subscribe
     public void onBLTNotConnectedEvent(BLTNotConnectedNotification event) {
-        // Set connection status text to connected
         //mContinueRecordButton.setEnabled(true);
-       // mNewRecordButton.setEnabled(true);
         //mSubmitRecordButton.setEnabled(true);
-        //mPreviousRecordsButton.setEnabled(true);
+        updateButtonStates();
         mConnectionStatusTextView.setText(getString(R.string.BTnotConnected));
     }
 
@@ -682,9 +680,9 @@ public class HomeFragment extends BaseFragment {
      */
     @Subscribe
     public void onStartRecordingEvent(BLTStartRecordingEvent event) {
-        if (mContinueRecordButton.isEnabled()) {
+        //if (mContinueRecordButton.isEnabled()) {
             onContinueButtonClicked();
-        }
+        //}
     }
     /**
      * Event from when user elects to pause recording
