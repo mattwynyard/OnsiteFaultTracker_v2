@@ -152,12 +152,13 @@ public class BitmapSaveUtil {
         int count = totalBitMapCount;
         String bitmapCount = String.format("%06d", count);
         correctedDateString = simpleDateFormat.format(correctedDate);
+        String gpsFileDate = simpleDateFormat.format(gpsTime);
         String cameraIdPrefix = SettingsUtil.sharedInstance().getCameraId();
         if (cameraIdPrefix == null) {
             cameraIdPrefix = "NOID";
         }
         cameraIdPrefix += "_";
-        final String filename = cameraIdPrefix + "IMG" + correctedDateString + "_" + bitmapCount;
+        final String filename = cameraIdPrefix + "IMG" + gpsFileDate + "_" + bitmapCount;
 
         long availableSpace = CalculationUtil.sharedInstance().getAvailableStorageSpaceKB();
         if (availableSpace <= 1024) {
@@ -214,7 +215,7 @@ public class BitmapSaveUtil {
                     Double time = (double)totalBitMapTime / totalBitMapCount;
                     final Double avgSaveTime = new BigDecimal(time).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
                     final long frequency = SettingsUtil.sharedInstance().getPictureFrequency();
-                    final String timeStampMilli = millisecondFormat.format(correctedDate);
+                    //final String timeStampMilli = millisecondFormat.format(correctedDate);
                     task1 = new Runnable() {
                         @Override
                         public void run() {

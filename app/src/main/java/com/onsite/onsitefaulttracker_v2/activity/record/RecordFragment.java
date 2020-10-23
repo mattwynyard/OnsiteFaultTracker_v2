@@ -270,7 +270,7 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
                     }
                 }
                 mRecord.photoCount++;
-                Log.i(TAG, "Photo Count: " + mRecord.photoCount);
+                //Log.i(TAG, "Photo Count: " + mRecord.photoCount);
                 updatePhotoCountText();
 
             } else {
@@ -318,7 +318,6 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
         stopRecording();
         LogUtil.sharedInstance().appendLog("Recording error: " + mRecord.photoCount);
         if (BLTManager.sharedInstance().getState() == 3) {
-            //BLTManager.sharedInstance().sendPhoto("E:CAMERA ERROR,", null);
             MessageUtil.sharedInstance().setError(3);
 
         } else {
@@ -327,23 +326,6 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
             Log.e(TAG, "*******************************************************");
             Log.e(TAG, "* RECORDING ERROR                                     *");
             Log.e(TAG, "*******************************************************");
-//            new AlertDialog.Builder(getActivity())
-//                    .setTitle(getString(R.string.record_error_title))
-//                    .setMessage(getString(R.string.record_error_message))
-//                    .setPositiveButton(getString(android.R.string.ok), null)
-//                    .setOnDismissListener(new DialogInterface.OnDismissListener() {
-//                        @Override
-//                        public void onDismiss(DialogInterface dialog) {
-//                            getActivity().onBackPressed();
-//                        }
-//                    })
-//                    .setOnCancelListener(new DialogInterface.OnCancelListener() {
-//                        @Override
-//                        public void onCancel(DialogInterface dialog) {
-//                            getActivity().onBackPressed();
-//                        }
-//                    })
-//                    .show();
         }
     }
 
@@ -354,7 +336,6 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
     private void onOutOfDiskSpaceError() {
         LogUtil.sharedInstance().appendLog("No disk space");
         if (BLTManager.sharedInstance().getState() == 3) {
-            //BLTManager.sharedInstance().sendPhoto("M:OUT OF CAMERA SPACE,", null);
             MessageUtil.sharedInstance().setError(2);
             stopRecording();
         } else {
@@ -477,7 +458,6 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
             LogUtil.sharedInstance().appendLog("Start recording called " + mRecord.photoCount);
             mStartedRecordingTime = new Date().getTime();
             mRecording = true;
-           // MessageUtil.sharedInstance().setRecording(true);
             scheduleNextFrame();
         } else {
             Log.i(TAG, "Start recording called but already recording");
@@ -497,13 +477,9 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
             if (BLTManager.sharedInstance().getState() == 3) {
                 BLTManager.sharedInstance().sendMessge("NOTRECORDING,");
             }
-            //MessageUtil.sharedInstance().setRecording(true);
-            //BLTManager.sharedInstance().sendMessage("NOTRECORDING,");
-            //BLTManager.sharedInstance().setRecording(false);
-            //TcpConnection.getSharedInstance().setRecording(false);
         } else {
             Log.i(TAG, "Stop recording called but already recording");
-            LogUtil.sharedInstance().appendLog("Stop recording called but not recording" + mRecord.photoCount);
+            LogUtil.sharedInstance().appendLog("Stop recording called already recording" + mRecord.photoCount);
         }
     }
 
@@ -512,9 +488,7 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
     // *******************************************************************
     @Override
     public void onCameraOpened() {
-
         Log.d(TAG, "Camera Opened");
-
     }
 
     @Override
@@ -526,7 +500,6 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
     public void onCameraError(int error) {
         Log.d(TAG, "Camera Error");
         LogUtil.sharedInstance().appendLog("Camera Error" + mRecord.photoCount);
-
     }
 
     /**
@@ -610,9 +583,7 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
 
     @Subscribe
     public void onBLTStartRecordingEvent(BLTStartRecordingEvent event) {
-        //HomeFragment.createInstance().onContinueButtonClicked();
         Log.i(TAG, "Start recording called from BLTEvent");
-
         startRecording();
     }
     /**
@@ -624,23 +595,6 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
     public void onBLTStopRecordingEvent(BLTStopRecordingEvent event) {
         Log.i(TAG, "Stop recording called from BLTEvent");
         stopRecording();
-        //getActivity().finish();
         getActivity().onBackPressed();
     }
-
-//    @Subscribe
-//    public void onBLEStopRecordingEvent(BLEStopRecordingEvent event) {
-//        stopRecording();
-//    }
-//
-//    /**
-//     * Event from when user elects to resume recording
-//     *
-//     * @param event
-//     */
-//    @Subscribe
-//    public void onBLEStartRecordingEvent(BLEStartRecordingEvent event) {
-//        startRecording();
-//    }
-
 }

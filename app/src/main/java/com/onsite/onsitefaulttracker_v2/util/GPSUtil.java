@@ -223,7 +223,7 @@ public class GPSUtil implements LocationListener {
                     mSatellites++;
                 }
             }
-            Log.d(TAG, "Satellites used in fix: " + mSatellites);
+            //Log.d(TAG, "Satellites used in fix: " + mSatellites);
         }
 
         @Override

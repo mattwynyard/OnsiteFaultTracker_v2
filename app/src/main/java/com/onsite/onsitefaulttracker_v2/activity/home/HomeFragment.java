@@ -667,8 +667,6 @@ public class HomeFragment extends BaseFragment {
      */
     @Subscribe
     public void onBLTNotConnectedEvent(BLTNotConnectedNotification event) {
-        //mContinueRecordButton.setEnabled(true);
-        //mSubmitRecordButton.setEnabled(true);
         updateButtonStates();
         mConnectionStatusTextView.setText(getString(R.string.BTnotConnected));
     }

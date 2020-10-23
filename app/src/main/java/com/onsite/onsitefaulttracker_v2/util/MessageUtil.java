@@ -50,9 +50,6 @@ public class MessageUtil {
     }
 
     public void setRecording(String recording) {
-//        byte[] array = new byte[1];
-//        array[0] = (byte)(recording == true ? 1 : 0);
-//        this.recording = array;
         this.recording = recording.getBytes(StandardCharsets.US_ASCII);
     }
 

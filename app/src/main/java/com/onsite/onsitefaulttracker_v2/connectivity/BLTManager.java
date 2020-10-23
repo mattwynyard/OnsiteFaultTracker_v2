@@ -162,7 +162,6 @@ public class BLTManager {
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.i(TAG, "onResumeCalled");
             String action = intent.getAction();
             // When discovery finds a device
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
@@ -363,7 +362,6 @@ public class BLTManager {
          */
         private void closeAll() {
             try {
-                //BusNotificationUtil.sharedInstance().postNotification(new BLTStopRecordingEvent());
                 Log.e(TAG, "Closing All");
                 BusNotificationUtil.sharedInstance().postNotification(new BLTNotConnectedNotification());
                 in.close();
@@ -401,6 +399,7 @@ public class BLTManager {
                 Log.i(TAG, "Read thread started");
                 try {
                     in = mSocket.getInputStream();
+
                     while ((length = in.read(buffer)) != -1) {
                         String line = new String(buffer, 0, length);
                         Log.d(TAG, "Buffer: " + line);
