@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 public class MessageUtil {
 
     // The tag name for this utility class
-    private static final String TAG = BitmapSaveUtil.class.getSimpleName();
+    private static final String TAG = MessageUtil.class.getSimpleName();
     // A static instance of the bitmap save utilities
     private static MessageUtil sMessageUtil;
 

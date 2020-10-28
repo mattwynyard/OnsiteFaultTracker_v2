@@ -44,12 +44,9 @@ public class BitmapSaveUtil {
 
     // The tag name for this utility class
     private static final String TAG = BitmapSaveUtil.class.getSimpleName();
-
     // The low disk space threshold
     private static final long LOW_DISK_SPACE_THRESHOLD = 204800L; //204.8 MB
-
     private static final double THUMBNAIL_REDUCTION = 0.25;
-
     private int totalBitMapTime = 0;
     private int totalBitMapCount = 0;
     // An enum which has all the SaveBitmapResult values
@@ -58,7 +55,6 @@ public class BitmapSaveUtil {
         SaveLowDiskSpace,
         Error
     }
-
     private AtomicInteger count;
     private String correctedDateString;
     private Calendar mCal = Calendar.getInstance();
@@ -69,13 +65,10 @@ public class BitmapSaveUtil {
     private static final String TIME_STAMP__FORMAT = "yyyy:MM:dd HH:mm:ss";
     // A static instance of the bitmap save utilities
     private static BitmapSaveUtil sBitmapSaveUtil;
-
     // Store the application context for access to storage
     private static Context mContext;
-
     private ExecutorService mThreadPool;
-
-    Runnable task1, task2;
+    private Runnable task1, task2;
 
     /**
      * Store the appication context for access to storage
@@ -116,17 +109,19 @@ public class BitmapSaveUtil {
 
     //used by logUtil
     public String getDateString() {
-        Date dateTime = correctDateTime();
+        Calendar dateTime = correctDateTime();
         final SimpleDateFormat timeStampFormat =  new SimpleDateFormat("dd/MM/yyyy HH:mm:ssZ");
-        String correctedDateString = timeStampFormat.format(dateTime);
+        String correctedDateString = timeStampFormat.format(dateTime.getTime());
         return correctedDateString;
     }
 
-    private Date correctDateTime() {
+    private Calendar correctDateTime() {
         long timeDelta = BLTManager.sharedInstance().getTimeDelta();
-        long timeNow = System.currentTimeMillis();
-        long correctedMilli = timeNow + timeDelta;
-        return new Date(correctedMilli);
+        Calendar cal =  Calendar.getInstance();
+        long timeNow = cal.getTimeInMillis();
+        long correctedMilli = timeNow - timeDelta;
+        cal.setTimeInMillis(correctedMilli);
+        return cal;
     }
 
     /**
@@ -144,14 +139,13 @@ public class BitmapSaveUtil {
         final SimpleDateFormat millisecondFormat =  new SimpleDateFormat(MILLI_DATE_FORMAT);
         final SimpleDateFormat timeStampFormat =  new SimpleDateFormat(TIME_STAMP__FORMAT);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(FILE_DATE_FORMAT);
-        final Date correctedDate = correctDateTime();
+        final Calendar correctedDate = correctDateTime();
         final Location location = GPSUtil.sharedInstance().getLocation();
         Long gpsTime = location.getTime();
         final String gpsTimeStamp = millisecondFormat.format(gpsTime); //sent in message
         totalBitMapCount++;
         int count = totalBitMapCount;
         String bitmapCount = String.format("%06d", count);
-        correctedDateString = simpleDateFormat.format(correctedDate);
         String gpsFileDate = simpleDateFormat.format(gpsTime);
         String cameraIdPrefix = SettingsUtil.sharedInstance().getCameraId();
         if (cameraIdPrefix == null) {
@@ -215,7 +209,6 @@ public class BitmapSaveUtil {
                     Double time = (double)totalBitMapTime / totalBitMapCount;
                     final Double avgSaveTime = new BigDecimal(time).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
                     final long frequency = SettingsUtil.sharedInstance().getPictureFrequency();
-                    //final String timeStampMilli = millisecondFormat.format(correctedDate);
                     task1 = new Runnable() {
                         @Override
                         public void run() {
@@ -226,7 +219,7 @@ public class BitmapSaveUtil {
                         @Override
                         public void run() {
                             String _file = file.getAbsolutePath();
-                            final String timeStamp = timeStampFormat.format(correctedDate);
+                            final String timeStamp = timeStampFormat.format(correctedDate.getTime());
                             EXIFUtil.sharedInstance().geoTagFile(_file, timeStamp, location);
                         }
                     };

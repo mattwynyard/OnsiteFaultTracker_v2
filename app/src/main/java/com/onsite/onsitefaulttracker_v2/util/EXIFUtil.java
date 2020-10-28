@@ -59,7 +59,7 @@ public class EXIFUtil {
 
     public void geoTagFile(String path, String correctedTimeStamp, Location location) {
         String datum = "WGS_84";
-        Log.d("Timestamp: " , correctedTimeStamp);
+        Log.d("Corrected Timestamp: ", correctedTimeStamp);
         Double latitude_ref;
         Double longitude_ref;
         Double altitude_ref;

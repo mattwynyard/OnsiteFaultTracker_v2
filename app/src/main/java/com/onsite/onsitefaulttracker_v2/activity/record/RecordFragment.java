@@ -1,10 +1,12 @@
 package com.onsite.onsitefaulttracker_v2.activity.record;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
+import android.hardware.GeomagneticField;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
@@ -30,10 +32,16 @@ import com.onsite.onsitefaulttracker_v2.util.CameraUtil;
 import com.onsite.onsitefaulttracker_v2.util.GPSUtil;
 import com.onsite.onsitefaulttracker_v2.util.LogUtil;
 import com.onsite.onsitefaulttracker_v2.util.MessageUtil;
+import com.onsite.onsitefaulttracker_v2.util.MotionUtil;
 import com.onsite.onsitefaulttracker_v2.util.RecordUtil;
 import com.onsite.onsitefaulttracker_v2.util.SettingsUtil;
 import com.onsite.onsitefaulttracker_v2.util.ThreadUtil;
 import com.squareup.otto.Subscribe;
+
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 
 import java.util.Date;
 
@@ -45,25 +53,20 @@ import java.util.Date;
  * filename
  */
 public class RecordFragment extends BaseFragment implements CameraUtil.CameraConnectionListener,
-        SeekBar.OnSeekBarChangeListener {
+        SeekBar.OnSeekBarChangeListener, SensorEventListener {
 
     // The tag name for this class
     private static final String TAG = RecordFragment.class.getSimpleName();
-
     // The interval for which to sound a warning for low disk space or battery
     private long SOUND_WARNING_INTERVAL = 5000;
-
     // The interval for checking the battery level
     private long CHECK_BATTERY_INTERVAL = 10000;
-
     // The level that if the battery falls below an alarm will sound
     private final float LOW_BATTERY_ALARM_LEVEL = 15.0f;
-
     // If this number of attempted frame captures in a row are blank,
     // show an error and stop recording.
     private final int BLANK_FRAMES_BEFORE_ERROR = 10;
-
-    String[] PERMISSIONS = {
+    private String[] PERMISSIONS = {
             android.Manifest.permission.ACCESS_COARSE_LOCATION,
             android.Manifest.permission.ACCESS_FINE_LOCATION,
             android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -71,46 +74,42 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
             android.Manifest.permission.READ_PHONE_STATE
     };
 
+    private MotionUtil mMotion;
     // The autoFitTextureView displays the camera view finder on the screen
     private AutoFitTextureView mTextureView;
-
     // The overlay view which will hide the view finder
     // To hide the view finder, set overlay view to visible.
     private View mOverlayView;
-
     // The TextView which shows the current count of the taken photos
     private TextView mPhotoCountTextView;
-
     // The seek bar for the level of exposure
     private VerticalSeekBar mExposureSeekBar;
-
     // The interval time between frames
     private long mIntervalMillis;
-
     // System time that recording started
     private long mStartedRecordingTime;
-
     // The record that is currently being recorded
     private Record mRecord;
-
     // Is it currently recording
     private boolean mRecording;
-
     // Has the low disk space error been displayed?
     private boolean mDisplayedLowDiskError;
-
     // Has the low battery error been displayed?
     private boolean mDisplayedLowBatteryError;
-
     // The last time that a warning sound was played
     private long mLastWarningSoundedTime;
-
     // The last time the battery level was checked
     private long mLastBatteryCheckedTime;
-
     // The number of consecutive blank frames,  if this increases too high
     // display an error and close the fragment
     private int mConsecutiveBlankFrames;
+    private static long lastUpdate;
+    private Sensor sensorAccelerometer;
+    private Sensor sensorRotation;
+    private Sensor sensorMagnetic;
+    private float[] mMagnetic;
+    private float[] mGravity;
+    private float[] mRotation;
 
     /**
      * instantiate and return an instance of this fragment
@@ -171,6 +170,8 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
 
             // Update the textview which displays the number of photos taken
             updatePhotoCountText();
+
+
         }
         return view;
     }
@@ -195,6 +196,14 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
         }
         // Register to receive bluetooth notifications
         BusNotificationUtil.sharedInstance().getBus().register(this);
+        sensorAccelerometer = MotionUtil.sharedInstance().getAccelerometer();
+        sensorRotation = MotionUtil.sharedInstance().getRotation();
+        sensorRotation = MotionUtil.sharedInstance().getMagnetic();
+        MotionUtil.sharedInstance().getManager().registerListener(this, sensorAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        MotionUtil.sharedInstance().getManager().registerListener(this, sensorRotation, SensorManager.SENSOR_DELAY_NORMAL);
+        MotionUtil.sharedInstance().getManager().registerListener(this, sensorMagnetic, SensorManager.SENSOR_DELAY_NORMAL);
+
+
     }
 
     /**
@@ -213,6 +222,49 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
         CameraUtil.sharedInstance().closeCamera();
         RecordUtil.sharedInstance().saveCurrentRecord();
         BusNotificationUtil.sharedInstance().getBus().unregister(this);
+       // mAccelerometer = MotionUtil.sharedInstance().getAccelerometer();
+        MotionUtil.sharedInstance().getManager().unregisterListener(this);
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+
+        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            mGravity = event.values;
+        } else if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
+            mRotation = event.values;
+        } else if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+            mMagnetic = event.values;
+        }
+
+        if (mGravity != null && mMagnetic != null) {
+            float[] R = new float[9];
+            float[] I = new float[9];
+            float[] orientation = new float[3];
+            SensorManager.getRotationMatrix(R, I, mGravity, mMagnetic);
+            SensorManager.getOrientation(R, orientation);
+            MotionUtil.sharedInstance().setOrientation(orientation);
+        }
+    }
+
+    private void getRotation(SensorEvent event) {
+        float[] rotation = event.values;
+
+        //System.out.println(rotation);
+    }
+
+    private void getAccelerometer(SensorEvent event) {
+        float[] values = event.values;
+        // Movement
+        float x = values[0];
+        float y = values[1];
+        float z = values[2];
+
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
     }
 
     /**

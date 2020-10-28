@@ -3,6 +3,7 @@ package com.onsite.onsitefaulttracker_v2.util;
 import android.Manifest;
 import android.app.Application;
 import android.content.Context;
+import android.hardware.GeomagneticField;
 import android.location.Criteria;
 import android.location.GnssClock;
 import android.location.GnssMeasurementsEvent;
@@ -66,6 +67,7 @@ public class GPSUtil implements LocationListener {
     public static final int PERMISSIONS_REQUEST_LOCATION = 10;
     private boolean mFix;
     private int mSatellites;
+
 
     /**
      * initializes GPSUtil.
@@ -135,6 +137,7 @@ public class GPSUtil implements LocationListener {
                 }
                 location = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
+
             } else {
                 //Log.d(TAG, "Location Manager Null");
             }
@@ -186,6 +189,7 @@ public class GPSUtil implements LocationListener {
                     MIN_TIME_BW_UPDATES,
                     MIN_DISTANCE_CHANGE_FOR_UPDATES, mLocationListener);
             mLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
         } else {
 
         }

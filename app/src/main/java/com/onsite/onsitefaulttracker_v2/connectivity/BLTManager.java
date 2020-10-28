@@ -26,9 +26,6 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -417,14 +414,13 @@ public class BLTManager {
                             int hour = Integer.valueOf(time[4]);
                             int minute = Integer.valueOf(time[5]);
                             int second = Integer.valueOf(time[6]);
-                            int millisecond = Integer.valueOf(time[7].substring(0, 2));
-                            DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss.SSS");
-                            Calendar gpsTime = Calendar.getInstance();
-                            gpsTime.set(year, month - 1, day, hour, minute, second);
-                            Log.d(TAG, "gpsTime: " + dateFormat.format(gpsTime.getTime()));
-                            Calendar nowTime = Calendar.getInstance();
-                            Log.d(TAG, "nowTime: " + dateFormat.format(nowTime.getTime()));
-                            timeDelta =  ChronoUnit.MILLIS.between(nowTime.toInstant(), gpsTime.toInstant());
+                            int millisecond = Integer.valueOf(time[7].substring(0, 3));
+                            Calendar sysTime = Calendar.getInstance();
+                            sysTime.set(year, month - 1, day, hour, minute, second); //0 = Jan
+                            long sysTimeMilli = sysTime.getTimeInMillis() + millisecond;
+                            long andTime = Calendar.getInstance().getTimeInMillis();
+
+                            timeDelta = andTime - sysTimeMilli;
                             Log.d(TAG, "timeDelta: " + timeDelta);
                         } else {
                         }
