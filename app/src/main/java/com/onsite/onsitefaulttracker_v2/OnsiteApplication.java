@@ -40,8 +40,6 @@ public class OnsiteApplication extends Application {
     public void onCreate()
     {
         super.onCreate();
-
-        //Fabric.with(this, new Crashlytics());
         // initialize the singletons used throughout this app
         SettingsUtil.initialize(this);
         CalculationUtil.initialize(this);
@@ -53,8 +51,6 @@ public class OnsiteApplication extends Application {
         BusNotificationUtil.initialize(this);
         MessageUtil.initialize(this);
         EXIFUtil.initialize(this);
-
-        MotionUtil.initialize(this);
         GPSUtil.initialize(this);
         LogUtil.initialize(this);
 
@@ -78,7 +74,5 @@ public class OnsiteApplication extends Application {
         Log.i(TAG, "APP: Low Memory");
         BLTManager.sharedInstance().sendPhoto("E:Low Phone Memory,", null);
         BusNotificationUtil.sharedInstance().postNotification(new BLTStopRecordingEvent());
-
     }
-
 }

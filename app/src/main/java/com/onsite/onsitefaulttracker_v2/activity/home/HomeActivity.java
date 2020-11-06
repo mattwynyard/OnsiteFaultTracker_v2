@@ -10,6 +10,9 @@ import com.onsite.onsitefaulttracker_v2.activity.previous.PreviousRecordsActivit
 import com.onsite.onsitefaulttracker_v2.activity.record.RecordActivity;
 import com.onsite.onsitefaulttracker_v2.activity.submit.SubmitActivity;
 import com.onsite.onsitefaulttracker_v2.connectivity.BLTManager;
+import com.onsite.onsitefaulttracker_v2.util.LogUtil;
+
+import java.io.File;
 
 /**
  * The Home Activity is the activity for the Home screen is where the user
@@ -58,6 +61,7 @@ public class HomeActivity extends BaseActivity implements HomeFragment.Listener 
         Intent recordIntent = new Intent();
         recordIntent.setClass(this, RecordActivity.class);
         startActivity(recordIntent);
+
     }
 
     /**

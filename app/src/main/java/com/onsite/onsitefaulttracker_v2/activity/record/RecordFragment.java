@@ -53,7 +53,7 @@ import java.util.Date;
  * filename
  */
 public class RecordFragment extends BaseFragment implements CameraUtil.CameraConnectionListener,
-        SeekBar.OnSeekBarChangeListener, SensorEventListener {
+        SeekBar.OnSeekBarChangeListener {
 
     // The tag name for this class
     private static final String TAG = RecordFragment.class.getSimpleName();
@@ -104,12 +104,7 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
     // display an error and close the fragment
     private int mConsecutiveBlankFrames;
     private static long lastUpdate;
-    private Sensor sensorAccelerometer;
-    private Sensor sensorRotation;
-    private Sensor sensorMagnetic;
-    private float[] mMagnetic;
-    private float[] mGravity;
-    private float[] mRotation;
+
 
     /**
      * instantiate and return an instance of this fragment
@@ -196,14 +191,19 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
         }
         // Register to receive bluetooth notifications
         BusNotificationUtil.sharedInstance().getBus().register(this);
-        sensorAccelerometer = MotionUtil.sharedInstance().getAccelerometer();
-        sensorRotation = MotionUtil.sharedInstance().getRotation();
-        sensorRotation = MotionUtil.sharedInstance().getMagnetic();
-        MotionUtil.sharedInstance().getManager().registerListener(this, sensorAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-        MotionUtil.sharedInstance().getManager().registerListener(this, sensorRotation, SensorManager.SENSOR_DELAY_NORMAL);
-        MotionUtil.sharedInstance().getManager().registerListener(this, sensorMagnetic, SensorManager.SENSOR_DELAY_NORMAL);
 
-
+//        Sensor sensorAccelerometer = MotionUtil.sharedInstance().getSensorAccelerometer();
+//        Sensor sensorRotation = MotionUtil.sharedInstance().getSensorRotation();
+//        Sensor sensorMagnetic = MotionUtil.sharedInstance().getSensorMagnetic();
+//        Sensor sensorLinearAcceleration = MotionUtil.sharedInstance().getSensorLinearAcceleration();
+//        MotionUtil.sharedInstance().getManager().registerListener(MotionUtil.sharedInstance(),
+//                sensorAccelerometer, SensorManager.SENSOR_DELAY_NORMAL, SensorManager.SENSOR_DELAY_UI);
+//        MotionUtil.sharedInstance().getManager().registerListener(MotionUtil.sharedInstance(),
+//                sensorRotation, SensorManager.SENSOR_DELAY_NORMAL, SensorManager.SENSOR_DELAY_UI);
+//        MotionUtil.sharedInstance().getManager().registerListener(MotionUtil.sharedInstance(),
+//                sensorMagnetic, SensorManager.SENSOR_DELAY_NORMAL, SensorManager.SENSOR_DELAY_UI);
+//        MotionUtil.sharedInstance().getManager().registerListener(MotionUtil.sharedInstance(),
+//                sensorLinearAcceleration, SensorManager.SENSOR_DELAY_NORMAL, SensorManager.SENSOR_DELAY_UI);
     }
 
     /**
@@ -222,50 +222,10 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
         CameraUtil.sharedInstance().closeCamera();
         RecordUtil.sharedInstance().saveCurrentRecord();
         BusNotificationUtil.sharedInstance().getBus().unregister(this);
-       // mAccelerometer = MotionUtil.sharedInstance().getAccelerometer();
-        MotionUtil.sharedInstance().getManager().unregisterListener(this);
+        //MotionUtil.sharedInstance().getManager().unregisterListener(MotionUtil.sharedInstance());
     }
 
-    @Override
-    public void onSensorChanged(SensorEvent event) {
 
-        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            mGravity = event.values;
-        } else if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
-            mRotation = event.values;
-        } else if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
-            mMagnetic = event.values;
-        }
-
-        if (mGravity != null && mMagnetic != null) {
-            float[] R = new float[9];
-            float[] I = new float[9];
-            float[] orientation = new float[3];
-            SensorManager.getRotationMatrix(R, I, mGravity, mMagnetic);
-            SensorManager.getOrientation(R, orientation);
-            MotionUtil.sharedInstance().setOrientation(orientation);
-        }
-    }
-
-    private void getRotation(SensorEvent event) {
-        float[] rotation = event.values;
-
-        //System.out.println(rotation);
-    }
-
-    private void getAccelerometer(SensorEvent event) {
-        float[] values = event.values;
-        // Movement
-        float x = values[0];
-        float y = values[1];
-        float z = values[2];
-
-    }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-    }
 
     /**
      * diaplays the number of photos taken

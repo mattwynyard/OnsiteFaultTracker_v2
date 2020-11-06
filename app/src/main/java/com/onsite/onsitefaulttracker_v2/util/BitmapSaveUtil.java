@@ -158,7 +158,6 @@ public class BitmapSaveUtil {
         if (availableSpace <= 1024) {
             return SaveBitmapResult.Error;
         }
-
         ThreadUtil.executeOnNewThread(new Runnable() {
             @Override
             public void run() {

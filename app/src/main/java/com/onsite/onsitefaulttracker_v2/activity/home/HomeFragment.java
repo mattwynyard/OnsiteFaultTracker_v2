@@ -575,6 +575,8 @@ public class HomeFragment extends BaseFragment {
             mCamera = SettingsUtil.sharedInstance().getCameraId();
         }
         createRecord(mCamera + "_" + todaysDisplayDate);
+        //LogUtil.sharedInstance().createLog("acceleration");
+        //LogUtil.sharedInstance().createLog("orientation");
         setBTName();
         updateButtonStates();
         if (bluetooth) {
