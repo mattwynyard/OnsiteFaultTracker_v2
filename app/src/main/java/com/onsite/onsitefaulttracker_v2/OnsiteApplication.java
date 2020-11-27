@@ -3,8 +3,8 @@ package com.onsite.onsitefaulttracker_v2;
 import android.app.Application;
 import android.util.Log;
 
-import com.crashlytics.android.Crashlytics;
-import io.fabric.sdk.android.Fabric;
+//import com.crashlytics.android.Crashlytics;
+//import io.fabric.sdk.android.Fabric;
 
 import com.onsite.onsitefaulttracker_v2.connectivity.BLTManager;
 import com.onsite.onsitefaulttracker_v2.model.notifcation_events.BLTStopRecordingEvent;
@@ -21,7 +21,7 @@ import com.onsite.onsitefaulttracker_v2.util.MotionUtil;
 import com.onsite.onsitefaulttracker_v2.util.RecordUtil;
 import com.onsite.onsitefaulttracker_v2.util.SettingsUtil;
 
-import static com.crashlytics.android.beta.Beta.TAG;
+//import static com.crashlytics.android.beta.Beta.TAG;
 
 /**
  * Created by hihi on 6/6/2016.
@@ -71,7 +71,7 @@ public class OnsiteApplication extends Application {
     @Override
     public void onLowMemory() {
         super.onLowMemory();
-        Log.i(TAG, "APP: Low Memory");
+        //Log.i(TAG, "APP: Low Memory");
         BLTManager.sharedInstance().sendPhoto("E:Low Phone Memory,", null);
         BusNotificationUtil.sharedInstance().postNotification(new BLTStopRecordingEvent());
     }

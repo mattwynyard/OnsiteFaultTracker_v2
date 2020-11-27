@@ -456,7 +456,7 @@ public class HomeFragment extends BaseFragment {
             case "R3CM40CBM0T":
                 return "C12";//galaxy s10 5g
             default:
-                return "CXX";
+                return "C99";
         }
     }
 
