@@ -372,7 +372,7 @@ public class HomeFragment extends BaseFragment {
     }
 
     public String getSerialNumber() {
-        String serialNumber;
+        String serialNumber = "";
         try {
             Class<?> c = Class.forName("android.os.SystemProperties");
             Method get = c.getMethod("get", String.class);
@@ -381,9 +381,12 @@ public class HomeFragment extends BaseFragment {
             if (serialNumber.equals(""))
                 serialNumber = (String) get.invoke(c, "ril.serialnumber");
 
-            if (serialNumber.equals(""))
-                serialNumber = (String) get.invoke(c, "ro.serialno");
-
+            if (serialNumber.equals("")) {
+                if (getActivity().checkSelfPermission(Manifest.permission.READ_PHONE_STATE)
+                        == PackageManager.PERMISSION_GRANTED) {
+                    serialNumber = (String) get.invoke(c, "ro.serialno");
+                }
+            }
             if (serialNumber.equals(""))
                 serialNumber = (String) get.invoke(c, "sys.serialnumber");
 
@@ -392,7 +395,7 @@ public class HomeFragment extends BaseFragment {
                         == PackageManager.PERMISSION_GRANTED) {
                     serialNumber = Build.getSerial();
                 }
-            // If none of the methods above worked
+             //If none of the methods above worked
             if (serialNumber.equals(Build.UNKNOWN)) {
                 new AlertDialog.Builder(getActivity())
                         .setTitle("Error")
