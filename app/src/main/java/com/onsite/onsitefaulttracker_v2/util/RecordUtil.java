@@ -176,14 +176,17 @@ public class RecordUtil {
             // TODO: Return an error
             return false;
         }
-//        File sdFolder = new File(EXTERNAL_SD_CARD);
-//        if (checkSDCard(sdFolder)) {
-//            File externalDir = mContext.getExternalFilesDir(newRecord.recordFolderName);
-//        } else {
         File newRecordPath = new File(baseFolder.getAbsoluteFile() + "/" + newRecord.recordFolderName);
         if (!newRecordPath.mkdir()) {
             // TODO: Return an error
             return false;
+        } else {
+            newRecordPath = new File(baseFolder.getAbsoluteFile() + "/" + newRecord.recordFolderName + "_200");
+            newRecordPath.mkdir();
+            newRecordPath = new File(baseFolder.getAbsoluteFile() + "/" + newRecord.recordFolderName + "_400");
+            newRecordPath.mkdir();
+
+            Log.e(TAG, "Error saving snap, Record path does not exist");
         }
 
         mCurrentRecord = newRecord;
