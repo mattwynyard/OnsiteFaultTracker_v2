@@ -49,6 +49,8 @@ public class RecordUtil {
     // The format of folder names when converted from a date
     private static final String FOLDER_DATE_FORMAT = "yy_MM_dd";
 
+    private static final String[] FOLDER_SUFFIXS = {"A", "B", "C", "D", "E", "F"};
+
     // The static instance of this class which will be initialized once then reused
     // throughout the app
     private static RecordUtil sRecordUtil;
@@ -128,7 +130,6 @@ public class RecordUtil {
         if (mCurrentRecord == null) {
             return false;
         }
-
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HHddss");
         String curDate = simpleDateFormat.format(mCurrentRecord.creationDate);
         String checkDate = simpleDateFormat.format(recordToCheck.creationDate);
@@ -176,21 +177,20 @@ public class RecordUtil {
             // TODO: Return an error
             return false;
         }
-        File newRecordPath = new File(baseFolder.getAbsoluteFile() + "/" + newRecord.recordFolderName);
-        if (!newRecordPath.mkdir()) {
-            // TODO: Return an error
-            return false;
-        } else {
-            newRecordPath = new File(baseFolder.getAbsoluteFile() + "/" + newRecord.recordFolderName + "_200");
-            newRecordPath.mkdir();
-            newRecordPath = new File(baseFolder.getAbsoluteFile() + "/" + newRecord.recordFolderName + "_400");
-            newRecordPath.mkdir();
 
+        try {
+            File newRecordPath = new File(baseFolder.getAbsoluteFile() + "/" + newRecord.recordFolderName);
+            mCurrentRecord = newRecord;
+            saveCurrentRecord();
+            newRecordPath.mkdir();
+            for (String ext: FOLDER_SUFFIXS) {
+                newRecordPath = new File(baseFolder.getAbsoluteFile() + "/" + newRecord.recordFolderName + "/" + ext) ;
+                newRecordPath.mkdir();
+            }
+        } catch (Exception e) {
             Log.e(TAG, "Error saving snap, Record path does not exist");
+            return false;
         }
-
-        mCurrentRecord = newRecord;
-        saveCurrentRecord();
         return true;
     }
 
@@ -300,10 +300,14 @@ public class RecordUtil {
         if (file.exists()) {
             deleteRecursive(file);
             mStoredRecordCount--;
-
+        }
+        for (String folder: FOLDER_SUFFIXS) {
+            file = new File(path + "_" + folder);
+            if (file.exists()) {
+                deleteRecursive(file);
+            }
         }
     }
-
     /**
      * Recursively delete the files and sub folders of a specified file/directory
      * @param fileOrDirectory
@@ -316,7 +320,6 @@ public class RecordUtil {
         }
         fileOrDirectory.delete();
     }
-
     /**
      * return all the records for a specified date
      *
@@ -325,7 +328,6 @@ public class RecordUtil {
      */
     public ArrayList<Record> getRecordsForDate(final Date date) {
         ArrayList<Record> resultList = new ArrayList<>();
-
         SimpleDateFormat dateFormat = new SimpleDateFormat(FOLDER_DATE_FORMAT);
         String folderString = dateFormat.format(date);
         File baseFolder = getBaseFolder();
@@ -342,7 +344,6 @@ public class RecordUtil {
                 }
             }
         }
-
         return resultList;
     }
 
@@ -473,16 +474,6 @@ public class RecordUtil {
         return (todaysRecords != null && todaysRecords.size() > 0);
     }
 
-//    /**
-//     * The record to return the path for
-//     *
-//     * @param record
-//     * @return
-//     */
-//    public String getPathForRecord(final Record record) {
-//        String baseFolder = getBaseFolder().getAbsolutePath();
-//        return baseFolder + "/" + record.recordFolderName;
-//    }
     /**
      * The record to return the path for
      *
@@ -546,24 +537,6 @@ public class RecordUtil {
             }
         }
     }
-
-//    /**
-//     * Return the base folder for storing records
-//     *
-//     * @return
-//     */
-//    public File getBaseFolder() {
-//        if (Environment.getExternalStorageDirectory() == null) {
-//            return null;
-//        }
-//        File rootFolder = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + RECORD_STORAGE_FOLDER);
-//        if (!rootFolder.exists()) {
-//            if (!rootFolder.mkdir()) {
-//                return null;
-//            }
-//        }
-//        return rootFolder;
-//    }
 
     /**
      * Return the base folder for storing records

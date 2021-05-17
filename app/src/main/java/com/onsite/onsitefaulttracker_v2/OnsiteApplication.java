@@ -45,8 +45,8 @@ public class OnsiteApplication extends Application {
         CalculationUtil.initialize(this);
         CameraUtil.initialize(this);
         BatteryUtil.initialize(this);
-        BitmapSaveUtil.initialize(this);
         RecordUtil.initialize(this);
+        BitmapSaveUtil.initialize(this);
         BLTManager.initialize(this);
         BusNotificationUtil.initialize(this);
         MessageUtil.initialize(this);

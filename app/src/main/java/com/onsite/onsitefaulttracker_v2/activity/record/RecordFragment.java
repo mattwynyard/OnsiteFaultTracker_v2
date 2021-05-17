@@ -191,19 +191,6 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
         }
         // Register to receive bluetooth notifications
         BusNotificationUtil.sharedInstance().getBus().register(this);
-
-//        Sensor sensorAccelerometer = MotionUtil.sharedInstance().getSensorAccelerometer();
-//        Sensor sensorRotation = MotionUtil.sharedInstance().getSensorRotation();
-//        Sensor sensorMagnetic = MotionUtil.sharedInstance().getSensorMagnetic();
-//        Sensor sensorLinearAcceleration = MotionUtil.sharedInstance().getSensorLinearAcceleration();
-//        MotionUtil.sharedInstance().getManager().registerListener(MotionUtil.sharedInstance(),
-//                sensorAccelerometer, SensorManager.SENSOR_DELAY_NORMAL, SensorManager.SENSOR_DELAY_UI);
-//        MotionUtil.sharedInstance().getManager().registerListener(MotionUtil.sharedInstance(),
-//                sensorRotation, SensorManager.SENSOR_DELAY_NORMAL, SensorManager.SENSOR_DELAY_UI);
-//        MotionUtil.sharedInstance().getManager().registerListener(MotionUtil.sharedInstance(),
-//                sensorMagnetic, SensorManager.SENSOR_DELAY_NORMAL, SensorManager.SENSOR_DELAY_UI);
-//        MotionUtil.sharedInstance().getManager().registerListener(MotionUtil.sharedInstance(),
-//                sensorLinearAcceleration, SensorManager.SENSOR_DELAY_NORMAL, SensorManager.SENSOR_DELAY_UI);
     }
 
     /**

@@ -181,7 +181,6 @@ public class HomeFragment extends BaseFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-
         if (context instanceof Listener) {
             mListener = (Listener) context;
         }

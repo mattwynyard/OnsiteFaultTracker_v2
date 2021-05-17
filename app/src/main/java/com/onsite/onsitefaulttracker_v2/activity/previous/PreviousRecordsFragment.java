@@ -90,7 +90,6 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
     @Override
     public void onDetach() {
         super.onDetach();
-
         mListener = null;
     }
 
@@ -126,6 +125,7 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
      */
     private void confirmDeleteRecord(final Record record) {
         boolean recordFinalized = record.uploadedSizeKB >= record.totalSizeKB;
+        int photoCount = record.photoCount;
         String deleteMessage = recordFinalized ? getString(R.string.delete_previous_record_message) :
                 getString(R.string.delete_previous_record_not_finalized_message);
 

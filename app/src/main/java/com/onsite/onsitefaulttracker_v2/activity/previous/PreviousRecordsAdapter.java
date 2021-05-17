@@ -167,6 +167,7 @@ public class PreviousRecordsAdapter extends BaseAdapter {
         }
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MMMM yyyy, h:mm a");
+        //RecordUtil.sharedInstance().saveCurrentRecord();
         final Record item = (Record) getItem(position);
         Calendar now = Calendar.getInstance();
         Calendar recordCalendar = Calendar.getInstance();
