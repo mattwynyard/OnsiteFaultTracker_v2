@@ -150,9 +150,11 @@ public class BitmapSaveUtil {
         final Location location = GPSUtil.sharedInstance().getLocation();
         Long gpsTime = location.getTime();
         final String gpsTimeStamp = millisecondFormat.format(gpsTime); //sent in message
-        totalBitMapCount = count.getAndIncrement();
+        count.getAndIncrement();
+        totalBitMapCount = count.intValue();
         String bitmapCount = String.format("%06d", totalBitMapCount);
         String correctedFileDate = simpleDateFormat.format(correctedDate.getTime());
+        String millicorrectedFileDate = millisecondFormat.format(correctedDate.getTime());
         String cameraIdPrefix = SettingsUtil.sharedInstance().getCameraId();
         if (cameraIdPrefix == null) {
             cameraIdPrefix = "NOID";
@@ -174,23 +176,22 @@ public class BitmapSaveUtil {
                     return;
                 }
                 try {
-                    File file = null;
-                    if (count.get() < FILE_THRESHOLD) {
-                        file = new File(path + "/A/", filename + ".jpg");
-                    } else if (count.get() >= FILE_THRESHOLD && count.get() < (FILE_THRESHOLD *2)) {
-                        file = new File(path + "/B/", filename + ".jpg");
-                    } else if (count.get() >= FILE_THRESHOLD && count.get() < (FILE_THRESHOLD *3)) {
-                        file = new File(path + "/C/", filename + ".jpg");
-                    } else if (count.get() >= FILE_THRESHOLD && count.get() < (FILE_THRESHOLD *4)) {
-                        file = new File(path + "/D/", filename + ".jpg");
-                    } else if (count.get() >= FILE_THRESHOLD && count.get() < (FILE_THRESHOLD *5)) {
-                        file = new File(path + "/E/", filename + ".jpg");
-                    } else if (count.get() >= FILE_THRESHOLD && count.get() < (FILE_THRESHOLD *6)) {
-                        file = new File(path + "/F/", filename + ".jpg");
-                    } else {
-                        file = new File(path, filename + ".jpg");
-                    }
-
+                    File file = new File(path + "/Photos/", filename + ".jpg");;
+//                    if (count.get() < FILE_THRESHOLD) {
+//                        file = new File(path + "/A/", filename + ".jpg");
+//                    } else if (count.get() >= FILE_THRESHOLD && count.get() < (FILE_THRESHOLD *2)) {
+//                        file = new File(path + "/B/", filename + ".jpg");
+//                    } else if (count.get() >= FILE_THRESHOLD && count.get() < (FILE_THRESHOLD *3)) {
+//                        file = new File(path + "/C/", filename + ".jpg");
+//                    } else if (count.get() >= FILE_THRESHOLD && count.get() < (FILE_THRESHOLD *4)) {
+//                        file = new File(path + "/D/", filename + ".jpg");
+//                    } else if (count.get() >= FILE_THRESHOLD && count.get() < (FILE_THRESHOLD *5)) {
+//                        file = new File(path + "/E/", filename + ".jpg");
+//                    } else if (count.get() >= FILE_THRESHOLD && count.get() < (FILE_THRESHOLD *6)) {
+//                        file = new File(path + "/F/", filename + ".jpg");
+//                    } else {
+//                        file = new File(path, filename + ".jpg");
+//                    }
                     long start = System.currentTimeMillis();
                     OutputStream fOutputStream = new FileOutputStream(file);
                     float reductionScale = CalculationUtil.sharedInstance()
@@ -227,30 +228,35 @@ public class BitmapSaveUtil {
                     fOutputStream.close();
                     long finish = System.currentTimeMillis();
                     totalBitMapTime += (finish - start);
-                    Double time = (double)totalBitMapTime / count.get();
+                    Double time = (double)totalBitMapTime / totalBitMapCount;
                     final Double avgSaveTime = new BigDecimal(time).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
-
-
                     final long frequency = SettingsUtil.sharedInstance().getPictureFrequency();
-                    task1 = new Runnable() {
-                        @Override
-                        public void run() {
-                            sendMessage(gpsTimeStamp, filename, photo, avgSaveTime, frequency, jpegBytes);
-                        }
-                    };
-                    final File f = file;
-                    task2 = new Runnable() {
-                        @Override
-                        public void run() {
-                            String _file = f.getAbsolutePath();
-                            final String timeStamp = timeStampFormat.format(correctedDate.getTime());
-                            EXIFUtil.sharedInstance().geoTagFile(_file, timeStamp, location);
-                        }
-                    };
                     if (BLTManager.sharedInstance().getState() == 3) {
-                        mThreadPool.execute(task1);
+                        sendMessage(gpsTimeStamp, filename, photo, avgSaveTime, frequency, jpegBytes);
                     }
-                    mThreadPool.execute(task2);
+                    String _file = file.getAbsolutePath();
+                    final String timeStamp = timeStampFormat.format(correctedDate.getTime());
+                    EXIFUtil.sharedInstance().geoTagFile(_file, timeStamp, location);
+//                    task1 = new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            sendMessage(gpsTimeStamp, filename, photo, avgSaveTime, frequency, jpegBytes);
+//                        }
+//                    };
+                    //final File f = file;
+
+//                    task2 = new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            String _file = f.getAbsolutePath();
+//                            final String timeStamp = timeStampFormat.format(correctedDate.getTime());
+//                            EXIFUtil.sharedInstance().geoTagFile(_file, timeStamp, location);
+//                        }
+//                    };
+//                    if (BLTManager.sharedInstance().getState() == 3) {
+//                        mThreadPool.execute(task1);
+//                    }
+//                    mThreadPool.execute(task2);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                     return;

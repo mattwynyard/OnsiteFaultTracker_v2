@@ -135,12 +135,6 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
             mRecordSubmittedTextView = (TextView) view.findViewById(R.id.record_submitted_text_view);
 
             mRecord = RecordUtil.sharedInstance().getRecordWithId(mRecordId);
-//            mFileNames = new String[mRecordFiles.length];
-//            for (int i = 0; i < mRecordFiles.length; i++) {
-//                totalBytes += mRecordFiles[i].length();
-//                mFileNames[i] = mRecordFiles[i].getAbsolutePath();
-//            }
-
             updateUIValues();
         }
         return view;

@@ -109,13 +109,21 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
      * @param record
      */
     private void deleteRecord(final Record record) {
-        RecordUtil.sharedInstance().deleteRecord(record);
-        ThreadUtil.executeOnMainThread(new Runnable() {
+        ThreadUtil.executeOnNewThread(new Runnable() {
             @Override
             public void run() {
+                RecordUtil.sharedInstance().deleteRecord(record);
                 populatePreviousRecordsList();
             }
         });
+
+        //RecordUtil.sharedInstance().deleteRecord(record);
+//        ThreadUtil.executeOnMainThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                populatePreviousRecordsList();
+//            }
+//        });
     }
 
     /**

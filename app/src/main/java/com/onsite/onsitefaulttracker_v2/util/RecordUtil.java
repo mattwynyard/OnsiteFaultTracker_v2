@@ -9,6 +9,8 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.onsite.onsitefaulttracker_v2.model.Record;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,7 +51,7 @@ public class RecordUtil {
     // The format of folder names when converted from a date
     private static final String FOLDER_DATE_FORMAT = "yy_MM_dd";
 
-    private static final String[] FOLDER_SUFFIXS = {"A", "B", "C", "D", "E", "F"};
+    private static final String[] FOLDER_SUFFIXS = {"Photos"};
 
     // The static instance of this class which will be initialized once then reused
     // throughout the app
@@ -57,6 +59,8 @@ public class RecordUtil {
 
     // The number of records in storage
     private int mStoredRecordCount;
+
+    private int mDeletedPhotoCount = 0;
 
     // The current active record
     private Record mCurrentRecord;
@@ -265,7 +269,28 @@ public class RecordUtil {
         if (record != null) {
             String recordPath = getPathForRecord(record);
             File recordFolder = !TextUtils.isEmpty(recordPath) ? new File(recordPath) : null;
-            return recordFolder != null ? recordFolder.listFiles() : null;
+            ArrayList<File> logFiles = new ArrayList<File>();
+            File[] photosToZip = null;
+            if (recordFolder != null) {
+                for (File f:recordFolder.listFiles()) {
+                    if (f.isDirectory()) {
+                        photosToZip = f.listFiles();
+
+                    } else {
+                        logFiles.add(f);
+                    }
+                }
+                File[] logs = logFiles.toArray(new File[0]);
+                int lenA = logs.length;
+                int lenB = photosToZip.length;
+                File[] result = new File[lenA + lenB];
+                System.arraycopy(logs, 0, result, 0, lenA);
+                System.arraycopy(photosToZip, 0, result, lenA, lenB);
+                return result;
+            } else {
+                return null;
+            }
+            //return recordFolder != null ? recordFolder.listFiles() : null;
         }
         return null;
     }
@@ -294,19 +319,12 @@ public class RecordUtil {
             mCurrentRecord = null;
             saveCurrentRecord();
         }
-
         final String path = getPathForRecord(record);
         File file = new File(path);
         if (file.exists()) {
             deleteRecursive(file);
-            mStoredRecordCount--;
         }
-        for (String folder: FOLDER_SUFFIXS) {
-            file = new File(path + "_" + folder);
-            if (file.exists()) {
-                deleteRecursive(file);
-            }
-        }
+        mStoredRecordCount = 0;
     }
     /**
      * Recursively delete the files and sub folders of a specified file/directory
@@ -319,6 +337,9 @@ public class RecordUtil {
             }
         }
         fileOrDirectory.delete();
+        if (fileOrDirectory.isFile()) {
+            mDeletedPhotoCount++;
+        }
     }
     /**
      * return all the records for a specified date
@@ -371,10 +392,11 @@ public class RecordUtil {
      */
     public void updateRecordCurrentImageCount(final Record record) {
         String recordPath = getPathForRecord(record);
+        recordPath += "/Photos";
         File recordFolder = new File(recordPath);
         if (recordFolder.exists()) {
             File[] recordFiles = recordFolder.listFiles();
-            record.photoCount = recordFiles != null ? recordFiles.length - 1 : 0;
+            record.photoCount = recordFiles != null ? recordFiles.length: 0;
         }
     }
 

@@ -209,7 +209,6 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
         CameraUtil.sharedInstance().closeCamera();
         RecordUtil.sharedInstance().saveCurrentRecord();
         BusNotificationUtil.sharedInstance().getBus().unregister(this);
-        //MotionUtil.sharedInstance().getManager().unregisterListener(MotionUtil.sharedInstance());
     }
 
 
@@ -269,7 +268,7 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
                     }
                 }
                 mRecord.photoCount++;
-                //Log.i(TAG, "Photo Count: " + mRecord.photoCount);
+                Log.i(TAG, "Photo Count: " + mRecord.photoCount);
                 updatePhotoCountText();
 
             } else {
