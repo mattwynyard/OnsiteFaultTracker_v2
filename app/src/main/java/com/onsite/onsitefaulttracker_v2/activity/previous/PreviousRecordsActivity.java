@@ -34,6 +34,7 @@ public class PreviousRecordsActivity extends BaseActivity implements PreviousRec
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
     }
 

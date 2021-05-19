@@ -4,17 +4,13 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -37,8 +33,6 @@ import com.onsite.onsitefaulttracker_v2.model.notifcation_events.UsbConnectedNot
 import com.onsite.onsitefaulttracker_v2.model.notifcation_events.UsbDisconnectedNotification;
 
 import com.onsite.onsitefaulttracker_v2.model.notifcation_events.BLTListeningNotification;
-
-import com.onsite.onsitefaulttracker_v2.util.BatteryUtil;
 import com.onsite.onsitefaulttracker_v2.util.BusNotificationUtil;
 import com.onsite.onsitefaulttracker_v2.util.GPSUtil;
 import com.onsite.onsitefaulttracker_v2.util.LogUtil;

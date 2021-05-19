@@ -423,6 +423,7 @@ public class BLTManager {
                             timeDelta = andTime - sysTimeMilli;
                             Log.d(TAG, "timeDelta: " + timeDelta);
                         } else {
+
                         }
                     }
                 } catch (IOException e) { //connection was lost

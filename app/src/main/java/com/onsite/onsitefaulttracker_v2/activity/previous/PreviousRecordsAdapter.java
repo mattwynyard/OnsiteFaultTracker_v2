@@ -14,6 +14,7 @@ import com.onsite.onsitefaulttracker_v2.R;
 import com.onsite.onsitefaulttracker_v2.model.Record;
 import com.onsite.onsitefaulttracker_v2.util.CalculationUtil;
 import com.onsite.onsitefaulttracker_v2.util.RecordUtil;
+import com.squareup.otto.Subscribe;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ import java.util.Calendar;
  *
  * The List adapter which displays the previous records to the user
  */
-public class PreviousRecordsAdapter extends BaseAdapter {
+public class PreviousRecordsAdapter extends BaseAdapter implements RecordUtil.DeleteListener {
 
     // The tag name for this adapter
     private static final String TAG = PreviousRecordsAdapter.class.getSimpleName();
@@ -37,6 +38,10 @@ public class PreviousRecordsAdapter extends BaseAdapter {
 
     // A valid context context
     private Context mContext;
+
+    private int counter;
+
+    private ViewHolder holder;
 
     /**
      * The View Holder which stores each items view
@@ -94,6 +99,15 @@ public class PreviousRecordsAdapter extends BaseAdapter {
         mRecordItemListener = recordItemListener;
     }
 
+    public void setCounter(int n) {
+        counter = n;
+    }
+
+    @Override
+    public void deleted(int count) {
+        System.out.println(count);
+    }
+
     /**
      * returns the number of items in the adapter
      *
@@ -139,7 +153,7 @@ public class PreviousRecordsAdapter extends BaseAdapter {
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
         View vi = convertView;
-        final ViewHolder holder;
+
 
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -182,6 +196,7 @@ public class PreviousRecordsAdapter extends BaseAdapter {
         holder.mNameTextView.setText(item.recordName);
         holder.mDateTextView.setText(prefixString +
                 simpleDateFormat.format(item.creationDate));
+
         holder.mImageCountTextView.setText(String.format("%d images", item.photoCount));
         String sizeString = CalculationUtil.sharedInstance().getDisplayValueFromKB(item.recordSizeKB) + " in storage";
         holder.mRecordSizeTextView.setText(sizeString);
@@ -246,7 +261,6 @@ public class PreviousRecordsAdapter extends BaseAdapter {
 
         return vi;
     }
-
     /**
      *  Listener for communicating button clicks to the parent fragment
      */

@@ -5,12 +5,8 @@ import android.content.SharedPreferences;
 import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
-
 import com.google.gson.Gson;
 import com.onsite.onsitefaulttracker_v2.model.Record;
-
-import org.apache.commons.lang3.ArrayUtils;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -70,6 +66,24 @@ public class RecordUtil {
 
     // The application context
     private Context mContext;
+
+    private DeleteListener mDeleteListener;
+
+    /**
+     * Interface for communicating with the parent fragment/activity
+     */
+    public interface DeleteListener {
+        void deleted(int count);
+    }
+
+    /**
+     * Sets the dropbox client listener
+     *
+     * @param listener
+     */
+    public void setDeleteListener(final DeleteListener listener) {
+        mDeleteListener = listener;
+    }
 
     /**
      * initializes RecordUtil.
@@ -338,7 +352,8 @@ public class RecordUtil {
         }
         fileOrDirectory.delete();
         if (fileOrDirectory.isFile()) {
-            mDeletedPhotoCount++;
+            mDeleteListener.deleted(mDeletedPhotoCount++);
+            //mDeletedPhotoCount++;
         }
     }
     /**

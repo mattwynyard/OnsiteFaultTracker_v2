@@ -29,7 +29,6 @@ import com.onsite.onsitefaulttracker_v2.util.BatteryUtil;
 import com.onsite.onsitefaulttracker_v2.util.BitmapSaveUtil;
 import com.onsite.onsitefaulttracker_v2.util.BusNotificationUtil;
 import com.onsite.onsitefaulttracker_v2.util.CameraUtil;
-import com.onsite.onsitefaulttracker_v2.util.GPSUtil;
 import com.onsite.onsitefaulttracker_v2.util.LogUtil;
 import com.onsite.onsitefaulttracker_v2.util.MessageUtil;
 import com.onsite.onsitefaulttracker_v2.util.MotionUtil;
