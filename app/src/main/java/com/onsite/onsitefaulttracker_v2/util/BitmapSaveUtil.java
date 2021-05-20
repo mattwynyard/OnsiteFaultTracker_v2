@@ -70,7 +70,6 @@ public class BitmapSaveUtil {
     // Store the application context for access to storage
     private static Context mContext;
     private ExecutorService mThreadPool;
-    private Runnable task1, task2;
 
     /**
      * Store the appication context for access to storage

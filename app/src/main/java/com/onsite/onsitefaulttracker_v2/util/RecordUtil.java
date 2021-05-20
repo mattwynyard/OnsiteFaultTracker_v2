@@ -351,10 +351,7 @@ public class RecordUtil {
             }
         }
         fileOrDirectory.delete();
-        if (fileOrDirectory.isFile()) {
-            mDeleteListener.deleted(mDeletedPhotoCount++);
-            //mDeletedPhotoCount++;
-        }
+        mDeleteListener.deleted(++mDeletedPhotoCount);
     }
     /**
      * return all the records for a specified date
@@ -388,6 +385,7 @@ public class RecordUtil {
      */
     public void updateRecordCurrentSize(final Record record) {
         String recordPath = getPathForRecord(record);
+        recordPath += "/Photos";
         File recordFolder = new File(recordPath);
         if (recordFolder.exists()) {
             File[] recordFiles = recordFolder.listFiles();

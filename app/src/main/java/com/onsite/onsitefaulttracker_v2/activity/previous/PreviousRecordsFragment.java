@@ -123,15 +123,15 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
     private void deleteRecord(final Record record) {
         RecordUtil.sharedInstance().setDeleteListener(mPreviousRecordsAdapter);
         mPreviousRecordsAdapter.setCounter(record.photoCount);
-        RecordUtil.sharedInstance().deleteRecord(record);
-        populatePreviousRecordsList();
-//        ThreadUtil.executeOnNewThread(new Runnable() {
-//            @Override
-//            public void run() {
-//
-//
-//            }
-//        });
+
+        ThreadUtil.executeOnNewThread(new Runnable() {
+            @Override
+            public void run() {
+                RecordUtil.sharedInstance().deleteRecord(record);
+                populatePreviousRecordsList();
+
+            }
+        });
     }
 
 

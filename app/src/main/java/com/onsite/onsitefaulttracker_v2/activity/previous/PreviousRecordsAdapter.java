@@ -14,6 +14,7 @@ import com.onsite.onsitefaulttracker_v2.R;
 import com.onsite.onsitefaulttracker_v2.model.Record;
 import com.onsite.onsitefaulttracker_v2.util.CalculationUtil;
 import com.onsite.onsitefaulttracker_v2.util.RecordUtil;
+import com.onsite.onsitefaulttracker_v2.util.ThreadUtil;
 import com.squareup.otto.Subscribe;
 
 import java.text.SimpleDateFormat;
@@ -105,7 +106,15 @@ public class PreviousRecordsAdapter extends BaseAdapter implements RecordUtil.De
 
     @Override
     public void deleted(int count) {
-        System.out.println(count);
+        int remaining = (counter - count);
+        if (remaining < 0) {
+            remaining = 0;
+        }
+        final int finalRemaining = remaining;
+        ThreadUtil.executeOnMainThread(() -> {
+            holder.mImageCountTextView.setText(String.format("%d images", finalRemaining));
+        });
+
     }
 
     /**

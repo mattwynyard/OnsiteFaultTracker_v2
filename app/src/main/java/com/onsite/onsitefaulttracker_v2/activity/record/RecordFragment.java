@@ -210,8 +210,6 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
         BusNotificationUtil.sharedInstance().getBus().unregister(this);
     }
 
-
-
     /**
      * diaplays the number of photos taken
      */
@@ -268,6 +266,7 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
                 }
                 mRecord.photoCount++;
                 Log.i(TAG, "Photo Count: " + mRecord.photoCount);
+                Log.i(TAG, "Blank Frames: " + mConsecutiveBlankFrames);
                 updatePhotoCountText();
 
             } else {
