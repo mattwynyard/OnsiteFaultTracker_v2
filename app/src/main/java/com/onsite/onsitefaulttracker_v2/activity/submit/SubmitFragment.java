@@ -135,6 +135,7 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
             mRecordSubmittedTextView = (TextView) view.findViewById(R.id.record_submitted_text_view);
 
             mRecord = RecordUtil.sharedInstance().getRecordWithId(mRecordId);
+
             updateUIValues();
         }
         return view;
@@ -162,13 +163,11 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
      * Update the ui with the record details
      */
     private void updateUIValues() {
-        mRecord.totalSizeKB = (totalBytes) /1024;
+        //mRecord.totalSizeKB = (totalBytes) /1024;
         mNameTextView.setText(mRecord.recordName);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MMMM yyyy, h:mm a");
         mDateTextView.setText(String.format(getString(R.string.submit_created_date), simpleDateFormat.format(mRecord.creationDate)));
         mTotalSizeTextView.setText(String.format(getString(R.string.submit_total_size), CalculationUtil.sharedInstance().getDisplayValueFromKB(mRecord.totalSizeKB)));
-        //final long remainingKB = mRecord.totalSizeKB - mRecord.uploadedSizeKB;
-        //mRemainingTextView.setText(String.format(getString(R.string.submit_remaining_size), CalculationUtil.sharedInstance().getDisplayValueFromKB(Math.max(remainingKB, 0))));
         float percentage = ((float)mRecord.uploadedSizeKB / (float)mRecord.totalSizeKB) * 100.0f;
         percentage = Math.min(100.0f, percentage);
         mPercentageTextView.setText(String.format("%.0f%%", percentage));

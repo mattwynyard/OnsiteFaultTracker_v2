@@ -200,11 +200,14 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
     public void onPause() {
         super.onPause();
         MessageUtil.sharedInstance().setRecording("N");
+        String recordPath = RecordUtil.sharedInstance().getPathForRecord(mRecord);
+        recordPath += "/Photos";
         Log.i(TAG, "RECORD:PAUSED");
         if (mStartedRecordingTime > 0) {
             long recordedTime = new Date().getTime() - mStartedRecordingTime;
             mRecord.totalRecordTime += recordedTime;
         }
+        mRecord.totalSizeKB = BitmapSaveUtil.sharedInstance().getPhotoBytes();
         CameraUtil.sharedInstance().closeCamera();
         RecordUtil.sharedInstance().saveCurrentRecord();
         BusNotificationUtil.sharedInstance().getBus().unregister(this);

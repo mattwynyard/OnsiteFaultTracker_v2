@@ -213,7 +213,7 @@ public class HomeFragment extends BaseFragment {
         boolean hasRecords = RecordUtil.sharedInstance().getCurrentRecordCount() > 0;
         mContinueRecordButton.setEnabled(hasCurrentRecord);
         mSubmitRecordButton.setEnabled(hasCurrentRecord);
-        mPreviousRecordsButton.setEnabled(hasRecords);
+        mPreviousRecordsButton.setEnabled(hasCurrentRecord);
         updateCurrentRecordText();
     }
 
@@ -533,9 +533,9 @@ public class HomeFragment extends BaseFragment {
      */
     private void checkForExistingRecords() {
         if (RecordUtil.sharedInstance().checkRecordExistsForToday()) {
+            updateButtonStates();
             if (bluetooth) {
                 if (mListener != null) {
-                    updateButtonStates();
                     mListener.onNewRecord();
                 }
             } else {
@@ -698,11 +698,6 @@ public class HomeFragment extends BaseFragment {
         // Set connection status text to disconnected
         mConnectionStatusTextView.setText(getString(R.string.not_connected));
     }
-
-
-
-
-
     /**
      * instantiate and return an instance of this fragment
      *

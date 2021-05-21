@@ -190,7 +190,6 @@ public class PreviousRecordsAdapter extends BaseAdapter implements RecordUtil.De
         }
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MMMM yyyy, h:mm a");
-        //RecordUtil.sharedInstance().saveCurrentRecord();
         final Record item = (Record) getItem(position);
         Calendar now = Calendar.getInstance();
         Calendar recordCalendar = Calendar.getInstance();
@@ -224,7 +223,7 @@ public class PreviousRecordsAdapter extends BaseAdapter implements RecordUtil.De
             holder.mProgressTextView.setText(mContext.getString(R.string.record_progress_in_progress));
             holder.mProgressTextView.setTextColor(ContextCompat.getColor(mContext, R.color.in_progress_green));
             holder.mUploadButton.setVisibility(View.INVISIBLE);
-            holder.mRecordButton.setVisibility(View.VISIBLE);
+            holder.mRecordButton.setVisibility(View.INVISIBLE);
             holder.mDeleteButton.setVisibility(View.INVISIBLE);
         } else {
             // Not Current, Ready to submit

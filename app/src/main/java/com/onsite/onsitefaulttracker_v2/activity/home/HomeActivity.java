@@ -94,14 +94,4 @@ public class HomeActivity extends BaseActivity implements HomeFragment.Listener 
         onSettingsClicked();
     }
 
-//    @Override
-//    public void onBackPressed() {
-//
-//        if (BLTManager.sharedInstance().getState() != 3) {
-//            super.onBackPressed();
-//        } else {
-//            Log.e(TAG, "Back pressed");
-//        }
-//    }
-
 }

@@ -49,6 +49,7 @@ public class BitmapSaveUtil {
     private static final double THUMBNAIL_REDUCTION = 0.25;
     private int totalBitMapTime = 0;
     private int totalBitMapCount = 0;
+    private long totalPhotokB = 0;
     // An enum which has all the SaveBitmapResult values
     public enum SaveBitmapResult {
         Save,
@@ -119,6 +120,10 @@ public class BitmapSaveUtil {
         final SimpleDateFormat timeStampFormat =  new SimpleDateFormat("dd/MM/yyyy HH:mm:ssZ");
         String correctedDateString = timeStampFormat.format(dateTime.getTime());
         return correctedDateString;
+    }
+
+    public long getPhotoBytes() {
+        return totalPhotokB;
     }
 
     private Calendar correctDateTime() {
@@ -205,9 +210,11 @@ public class BitmapSaveUtil {
                             photo);
                     rotatedBitmap.recycle();
                     resizedBitmap.recycle();
-                    bitmapToSave.recycle();
+                    //bitmapToSave.recycle();
                     fOutputStream.flush();
+
                     final long jpegBytes = ((FileOutputStream) fOutputStream).getChannel().size();
+                    totalPhotokB += (jpegBytes / 1000);
                     fOutputStream.close();
                     String _file = file.getAbsolutePath();
                     final String timeStamp = timeStampFormat.format(correctedDate.getTime());
