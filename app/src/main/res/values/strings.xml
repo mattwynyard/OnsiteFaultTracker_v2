@@ -7,12 +7,12 @@
     <string name="home_title">Onsite Fault Tracker</string>
     <string name="new_record">New Record</string>
     <string name="continue_record">Continue Record</string>
-    <string name="submit_record">Submit Record</string>
+    <string name="submit_record">Zip Record</string>
     <string name="zip_record">Zip Record</string>
-    <string name="previous_records">Previous Records</string>
+    <string name="previous_records">Current Record</string>
     <string name="app_version">App Version: %s</string>
     <string name="no_current_record">No Current Record</string>
-    <string name="not_connected">Usb connection not initialized</string>
+    <string name="not_connected">Bluetooth connection not initialized</string>
     <string name="connected">Usb connected</string>
     <string name="BTconnected">Bluetooth connected</string>
     <string name="BTconnecting">Bluetooth waiting for connection</string>

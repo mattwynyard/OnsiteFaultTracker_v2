@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/AndroidPhoneApp.OnsiteFaultTracker_v2.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/AndroidPhoneApp.OnsiteFaultTracker_v2.app.iml" />
       <module fileurl="file://$PROJECT_DIR$/OnsiteFaultTracker_v2.iml" filepath="$PROJECT_DIR$/OnsiteFaultTracker_v2.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/OnsiteFaultTracker_v2.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/OnsiteFaultTracker_v2.app.iml" />
     </modules>

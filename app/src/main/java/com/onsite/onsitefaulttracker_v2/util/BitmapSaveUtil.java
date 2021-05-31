@@ -57,11 +57,10 @@ public class BitmapSaveUtil {
         Error
     }
     private AtomicInteger count;
-    private static final int FILE_THRESHOLD = 10000;
     private Record currentRecord;
     private String correctedDateString;
-    private Calendar mCal = Calendar.getInstance();
-    private TimeZone mTz = mCal.getTimeZone();
+    private Calendar mCal;
+    private TimeZone mTz;
     // The format of file names when converted from a date
     private static final String FILE_DATE_FORMAT = "yyMMdd_HHmmss";
     private static final String MILLI_DATE_FORMAT = "dd/MM/yyyy HH:mm:ss.SSS";

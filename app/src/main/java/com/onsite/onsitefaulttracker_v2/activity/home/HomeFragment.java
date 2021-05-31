@@ -69,7 +69,7 @@ public class HomeFragment extends BaseFragment {
     private static final int REQUEST_ENABLE_DISCOVERY = 44;
     private static final int REQUEST_ENABLE_BT = 45;
     private final int BT_TIMEOUT = 1200; //seconds
-    String[] PERMISSIONS = {
+    private String[] PERMISSIONS = {
             android.Manifest.permission.ACCESS_COARSE_LOCATION,
             android.Manifest.permission.ACCESS_FINE_LOCATION,
             android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -210,9 +210,11 @@ public class HomeFragment extends BaseFragment {
      */
     private void updateButtonStates() {
         boolean hasCurrentRecord = RecordUtil.sharedInstance().getCurrentRecord() != null;
-        boolean hasRecords = RecordUtil.sharedInstance().getCurrentRecordCount() > 0;
+        Record r = RecordUtil.sharedInstance().getCurrentRecord();
         mContinueRecordButton.setEnabled(hasCurrentRecord);
-        mSubmitRecordButton.setEnabled(hasCurrentRecord);
+        if (hasCurrentRecord) {
+            mSubmitRecordButton.setEnabled(r.photoCount > 0);
+        }
         mPreviousRecordsButton.setEnabled(hasCurrentRecord);
         updateCurrentRecordText();
     }
