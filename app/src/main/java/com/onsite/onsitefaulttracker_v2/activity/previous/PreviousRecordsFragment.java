@@ -62,12 +62,6 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
         View view = super.onCreateView(inflater, container, savedInstanceState);
         if (view != null) {
             mPreviousRecordsList = (ListView)view.findViewById(R.id.previous_records_list);
-//            mHandler = new Handler(){
-//                @Override
-//                public void handleMessage(Message msg){
-//                    //mPreviousRecordsAdapter.updateUI(msg.what);
-//                }
-//            };
         }
         return view;
     }
@@ -129,7 +123,6 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
             public void run() {
                 RecordUtil.sharedInstance().deleteRecord(record);
                 populatePreviousRecordsList();
-
             }
         });
     }

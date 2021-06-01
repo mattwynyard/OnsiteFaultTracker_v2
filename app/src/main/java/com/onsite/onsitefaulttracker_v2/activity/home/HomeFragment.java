@@ -45,6 +45,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import static java.lang.Boolean.FALSE;
+
 
 /**
  * Created by hihi on 6/7/2016.
@@ -73,14 +75,13 @@ public class HomeFragment extends BaseFragment {
             android.Manifest.permission.ACCESS_COARSE_LOCATION,
             android.Manifest.permission.ACCESS_FINE_LOCATION,
             android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            android.Manifest.permission.CAMERA,
-            android.Manifest.permission.READ_PHONE_STATE
+            android.Manifest.permission.CAMERA
     };
     // The display date format to display to the user
     private static final String DISPLAY_DATE_FORMAT = "dd MMM yyyy";
     private boolean mAdvertising = false;
     private boolean bluetooth = false;
-    private String mCamera;
+    private String mInspector;
     private String mSerialNumber;
     // The current record name
     private TextView mCurrentRecordName;
@@ -158,10 +159,6 @@ public class HomeFragment extends BaseFragment {
                 ActivityCompat.requestPermissions(getActivity(), PERMISSIONS, PERMISSION_ALL);
             }
             enableBluetooth();
-            if (SettingsUtil.sharedInstance().getCameraId() !=  "") {
-                mCamera = SettingsUtil.sharedInstance().getCameraId();
-                setBTName();
-            }
         }
         return view;
     }
@@ -209,14 +206,27 @@ public class HomeFragment extends BaseFragment {
      * Update the state of the buttons
      */
     private void updateButtonStates() {
+        String inspector = SettingsUtil.sharedInstance().getCameraId();
         boolean hasCurrentRecord = RecordUtil.sharedInstance().getCurrentRecord() != null;
         Record r = RecordUtil.sharedInstance().getCurrentRecord();
-        mContinueRecordButton.setEnabled(hasCurrentRecord);
         if (hasCurrentRecord) {
+            mNewRecordButton.setEnabled(false);
+            mContinueRecordButton.setEnabled(true);
+            mPreviousRecordsButton.setEnabled(true);
             mSubmitRecordButton.setEnabled(r.photoCount > 0);
+
+        } else {
+            if (inspector == "") {
+                mNewRecordButton.setEnabled(false);
+            } else {
+                mNewRecordButton.setEnabled(true);
+            }
+            mContinueRecordButton.setEnabled(false);
+            mSubmitRecordButton.setEnabled(false);
+            mPreviousRecordsButton.setEnabled(false);
         }
-        mPreviousRecordsButton.setEnabled(hasCurrentRecord);
         updateCurrentRecordText();
+
     }
 
     /**
@@ -308,13 +318,13 @@ public class HomeFragment extends BaseFragment {
             if (resultCode == BT_TIMEOUT || resultCode == 120) { //user selected OK
                 mAdvertising = true;
                 BusNotificationUtil.sharedInstance().postNotification(new BLTListeningNotification());
-                requestPhonePermission();
-                setBTName();
+                //requestStoragePermission();
+                //setBTName();
                 startBluetooth();
             } else {
                 mAdvertising = false;
                 BusNotificationUtil.sharedInstance().postNotification(new BLTNotConnectedNotification());
-                setBTName();
+                //setBTName();
             }
         }
     }
@@ -330,19 +340,9 @@ public class HomeFragment extends BaseFragment {
         return true;
     }
 
-    private boolean requestPhonePermission() {
-        if (getActivity().checkSelfPermission(Manifest.permission.READ_PHONE_STATE)
-                == PackageManager.PERMISSION_GRANTED) {
-            mSerialNumber = getSerialNumber();
-            Log.d(TAG, "Serial number: " + mSerialNumber);
-            return true;
-
-        } else {
-            ActivityCompat.requestPermissions(getActivity(),
-                    new String[]{Manifest.permission.READ_PHONE_STATE},
-                    READ_PHONE_STATE_REQUEST_CODE);
-            return false;
-        }
+    private void setBTName() {
+        String btname = "OnSite_BLT_Adapter_" + mInspector;
+        BLTManager.sharedInstance().setBTName(btname);
     }
 
     @Override
@@ -355,8 +355,6 @@ public class HomeFragment extends BaseFragment {
                     // All good!
                     if (getActivity().checkSelfPermission(Manifest.permission.READ_PHONE_STATE)
                             == PackageManager.PERMISSION_GRANTED) {
-                        mSerialNumber = getSerialNumber();
-                        Log.d(TAG, "Serial number: " + mSerialNumber);
                     }
                 } else {
                     Log.d(TAG, "Need phone permission");
@@ -365,99 +363,6 @@ public class HomeFragment extends BaseFragment {
                 return;
         }
     }
-
-    public String getSerialNumber() {
-        String serialNumber = "";
-        try {
-            Class<?> c = Class.forName("android.os.SystemProperties");
-            Method get = c.getMethod("get", String.class);
-            serialNumber = (String) get.invoke(c, "gsm.sn1");
-
-            if (serialNumber.equals(""))
-                serialNumber = (String) get.invoke(c, "ril.serialnumber");
-
-            if (serialNumber.equals("")) {
-                if (getActivity().checkSelfPermission(Manifest.permission.READ_PHONE_STATE)
-                        == PackageManager.PERMISSION_GRANTED) {
-                    serialNumber = (String) get.invoke(c, "ro.serialno");
-                }
-            }
-            if (serialNumber.equals(""))
-                serialNumber = (String) get.invoke(c, "sys.serialnumber");
-
-            if (serialNumber.equals(""))
-                if (getActivity().checkSelfPermission(Manifest.permission.READ_PHONE_STATE)
-                        == PackageManager.PERMISSION_GRANTED) {
-                    serialNumber = Build.getSerial();
-                }
-             //If none of the methods above worked
-            if (serialNumber.equals(Build.UNKNOWN)) {
-                new AlertDialog.Builder(getActivity())
-                        .setTitle("Error")
-                        .setMessage("Could not get phone serial number")
-                        .setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-
-                            }
-                        });
-                serialNumber = "CXX";
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            new AlertDialog.Builder(getActivity())
-                    .setTitle("Error")
-                    .setMessage("Could not get phone serial number")
-                    .setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-
-                        }
-                    });
-            serialNumber = "";
-        }
-        return serialNumber;
-    }
-
-    private void setBTName() {
-        String btname = "OnSite_BLT_Adapter_" + mCamera;
-        BLTManager.sharedInstance().setBTName(btname);
-    }
-
-    private String getCameraId() {
-        switch (mSerialNumber) {
-            case "ad071603301688a406":
-                return "C00";
-            case "ad07160328c52f53ed":
-                return "C01";
-            case "988627395552575855":
-                return "C02";
-            case "98862738354837315a":
-                return "C03";
-            case "ce0416048828440503":
-                return "C04";
-            case "R58J31Z5CPP":
-                return "C05"; //galaxy s7
-            case "R58M45X7LDB":
-                return "C06";
-            case "LHS7N18A17009063":
-                return "C07";
-            case "R39M30GGB1L":
-                return "C08"; //galaxy s10
-            case "R3CM40GK3JN":
-                return "C09";//galaxy s10 5g
-            case "R3CM406J5HP":
-                return "C10";//galaxy s10 5g
-            case "R3CM508HCVZ":
-                return "C11";//galaxy s10 5g
-            case "R3CM40CBM0T":
-                return "C12";//galaxy s10 5g
-            default:
-                return "C99";
-        }
-    }
-
     /**
      * Requests camera permissions if they are not already granted
      */
@@ -497,12 +402,14 @@ public class HomeFragment extends BaseFragment {
         if (requestStoragePermission()) {
             return;
         }
-        if (getActivity().checkSelfPermission(Manifest.permission.READ_PHONE_STATE)
-                == PackageManager.PERMISSION_GRANTED) {
-            mSerialNumber = getSerialNumber();
-            Log.d(TAG, "Serial number: " + mSerialNumber);
+        mInspector = SettingsUtil.sharedInstance().getCameraId();
+        if (mInspector ==  "") {
+            showInspectorMustBeEntered();
+        } else {
+            setBTName();
+            checkForExistingRecords();
         }
-        checkForExistingRecords();
+
     }
 
     /**
@@ -562,18 +469,9 @@ public class HomeFragment extends BaseFragment {
         recordNameInput.setLayoutParams(recordNameParams);
         recordNameInput.setSingleLine();
         recordNameLayout.addView(recordNameInput);
-
         SimpleDateFormat dateFormat = new SimpleDateFormat(DISPLAY_DATE_FORMAT);
         final String todaysDisplayDate = dateFormat.format(new Date());
-        if (SettingsUtil.sharedInstance().getCameraId() == "") {
-
-            mCamera = getCameraId();
-            SettingsUtil.sharedInstance().setCameraId(mCamera);
-        } else {
-            mCamera = SettingsUtil.sharedInstance().getCameraId();
-        }
-        createRecord(mCamera + "_" + todaysDisplayDate);
-        setBTName();
+        createRecord(mInspector + "_" + todaysDisplayDate);
         updateButtonStates();
         if (bluetooth) {
             mListener.onNewRecord();
@@ -583,10 +481,10 @@ public class HomeFragment extends BaseFragment {
     /**
      * Show a dialog notifying the user that they must enter a name for the record
      */
-    private void showNameMustBeEntered() {
+    private void showInspectorMustBeEntered() {
         new AlertDialog.Builder(getActivity())
-                .setTitle(getString(R.string.new_record_please_enter_name_title))
-                .setMessage(getString(R.string.new_record_please_enter_name_message))
+                .setTitle(getString(R.string.new_record_please_enter_inpsector))
+                .setMessage(getString(R.string.new_record_please_enter_inspector_message))
                 .setPositiveButton(getString(android.R.string.ok), null)
                 .show();
     }
@@ -676,9 +574,7 @@ public class HomeFragment extends BaseFragment {
      */
     @Subscribe
     public void onStartRecordingEvent(BLTStartRecordingEvent event) {
-        //if (mContinueRecordButton.isEnabled()) {
             onContinueButtonClicked();
-        //}
     }
     /**
      * Event from when user elects to pause recording

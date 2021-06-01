@@ -212,7 +212,7 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
         mSubmittingProgressBar.setVisibility(View.INVISIBLE);
         mSubmitButton.setVisibility(View.INVISIBLE);
 
-        mRecord.fileUploadCount = mRecord.photoCount;
+        //mRecord.fileUploadCount = mRecord.photoCount;
         RecordUtil.sharedInstance().saveRecord(mRecord);
     }
 
@@ -299,18 +299,6 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
         });
     }
 
-//    /**
-//     * Intialises a new Compressor object at set files to compress and path to save zip file to
-//     *
-//     * @param files - array of files to compress
-//     * @param path - file path to save zipped file to
-//     * @return - new Compressor object
-//     */
-//    public Compressor compress(File[] files, String path) {
-//        Compressor c = new Compressor(files, path);
-//        return c;
-//    }
-
     /**
      * Override and handle on back action return true if consumed the event
      * (if the parent activity should not close as is its normal coarse of action) otherwise
@@ -360,6 +348,12 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
             totalBytesCompressed += buffer;
             Log.i("Bytes: ", String.valueOf(totalBytes));
             Log.i("Compressed Bytes: ", String.valueOf(totalBytesCompressed));
+    }
+
+    @Override
+    public void zipCount(int count) {
+        Log.i("count: ", String.valueOf(count));
+        mRecord.fileUploadCount = count;
     }
 
     /**
