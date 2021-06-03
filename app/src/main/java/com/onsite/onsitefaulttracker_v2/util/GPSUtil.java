@@ -189,33 +189,7 @@ public class GPSUtil implements LocationListener {
                     MIN_TIME_BW_UPDATES,
                     MIN_DISTANCE_CHANGE_FOR_UPDATES, mLocationListener);
             mLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-
-        } else {
-
         }
-
-    GnssMeasurementsEvent.Callback gnssMeasurementsCallback = new GnssMeasurementsEvent.Callback() {
-        @Override
-        public void onGnssMeasurementsReceived(GnssMeasurementsEvent eventArgs) {
-
-
-        }
-
-        public void onStatusChanged(int status) {
-
-        }
-    };
-
-    GnssNavigationMessage.Callback gnssMessageCallback = new GnssNavigationMessage.Callback() {
-        @Override
-        public void onGnssNavigationMessageReceived(GnssNavigationMessage event) {
-            Log.d(TAG, "Navigation Message received)");
-        }
-
-        public void onStatusChanged(int status) {
-
-        }
-    };
 
     GnssStatus.Callback gnssStatusCallBack = new GnssStatus.Callback() {
         @Override
@@ -242,7 +216,7 @@ public class GPSUtil implements LocationListener {
         @Override
         public void onStarted() {
             super.onStarted();
-            Log.d(TAG, "GPS_EVENT_STARTED...");
+            //Log.d(TAG, "GPS_EVENT_STARTED...");
             //LogUtil.sharedInstance().appendLog("Acquiring satellite fix...");
             Toast.makeText(mContext, "Acquiring satellite fix...",
                     Toast.LENGTH_SHORT).show();
@@ -268,8 +242,6 @@ public class GPSUtil implements LocationListener {
             return;
         }
         mLocationManager.registerGnssStatusCallback(gnssStatusCallBack);
-        //mLocationManager.registerGnssMeasurementsCallback(gnssMeasurementsCallback);
-        //mLocationManager.registerGnssNavigationMessageCallback(gnssMessageCallback);
     }
 
     public boolean hasFix() {
@@ -282,10 +254,13 @@ public class GPSUtil implements LocationListener {
                 Log.d(TAG, "Location Null");
                 mLocation = new Location(LocationManager.GPS_PROVIDER);
             }
+            return mLocation;
         } else {
             Log.d(TAG, "GPS not enabled");
+            Toast.makeText(mContext, "Error - GPS not enabled",
+                    Toast.LENGTH_SHORT).show();
+            return null;
         }
-        return mLocation;
     }
 
 

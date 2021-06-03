@@ -82,7 +82,6 @@ public class HomeFragment extends BaseFragment {
     private boolean mAdvertising = false;
     private boolean bluetooth = false;
     private String mInspector;
-    private String mSerialNumber;
     // The current record name
     private TextView mCurrentRecordName;
     // The current record date
@@ -148,11 +147,9 @@ public class HomeFragment extends BaseFragment {
                     onPreviousRecordsClicked();
                 }
             });
-
             mCurrentRecordName = (TextView) view.findViewById(R.id.current_record_name);
             mCurrentRecordDate = (TextView) view.findViewById(R.id.current_record_date);
             mConnectionStatusTextView = (TextView) view.findViewById(R.id.connected_text_view);
-
             mAppVersion = (TextView) view.findViewById(R.id.app_version_text_view);
             initAppVersionText();
             if(!hasPermissions(mContext, PERMISSIONS)) {
@@ -207,14 +204,13 @@ public class HomeFragment extends BaseFragment {
      */
     private void updateButtonStates() {
         String inspector = SettingsUtil.sharedInstance().getCameraId();
-        boolean hasCurrentRecord = RecordUtil.sharedInstance().getCurrentRecord() != null;
         Record r = RecordUtil.sharedInstance().getCurrentRecord();
+        boolean hasCurrentRecord = r != null;
         if (hasCurrentRecord) {
             mNewRecordButton.setEnabled(false);
             mContinueRecordButton.setEnabled(true);
             mPreviousRecordsButton.setEnabled(true);
             mSubmitRecordButton.setEnabled(r.photoCount > 0);
-
         } else {
             if (inspector == "") {
                 mNewRecordButton.setEnabled(false);
@@ -226,7 +222,6 @@ public class HomeFragment extends BaseFragment {
             mPreviousRecordsButton.setEnabled(false);
         }
         updateCurrentRecordText();
-
     }
 
     /**
@@ -340,10 +335,10 @@ public class HomeFragment extends BaseFragment {
         return true;
     }
 
-    private void setBTName() {
-        String btname = "OnSite_BLT_Adapter_" + mInspector;
-        BLTManager.sharedInstance().setBTName(btname);
-    }
+//    private void setBTName() {
+//        String btname = "OnSite_BLT_Adapter_" + mInspector;
+//        BLTManager.sharedInstance().setBTName(btname);
+//    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
@@ -406,19 +401,21 @@ public class HomeFragment extends BaseFragment {
         if (mInspector ==  "") {
             showInspectorMustBeEntered();
         } else {
-            setBTName();
             checkForExistingRecords();
-        }
+            if(GPSUtil.sharedInstance().getLocation() == null) {
+                GPSUtil.sharedInstance().intialiseGPS();
+            }
+            String btname = "OnSite_BLT_Adapter_" + mInspector;
+            BLTManager.sharedInstance().setBTName(btname);
 
+        }
     }
 
     /**
      * Action when user clicks on continue button, continue recording the current record
      */
     private void onContinueButtonClicked() {
-        if(GPSUtil.sharedInstance().getLocation() == null) {
-            GPSUtil.sharedInstance().intialiseGPS();
-        }
+
         if (mListener != null) {
             mListener.onNewRecord();
         }
