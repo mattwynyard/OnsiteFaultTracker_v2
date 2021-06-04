@@ -184,12 +184,10 @@ public class RecordUtil {
         newRecord.recordSizeKB = 0;
         newRecord.uploadedSizeKB = 0;
         newRecord.fileUploadCount = 0;
-
         ArrayList<Record> todaysRecords = getRecordsForDate(newRecord.creationDate);
         String appendString = todaysRecords != null && todaysRecords.size() > 0 ? "_" + (todaysRecords.size() + 1) : "";
         SimpleDateFormat dateFormat = new SimpleDateFormat(FOLDER_DATE_FORMAT);
         newRecord.recordFolderName = dateFormat.format(newRecord.creationDate) + appendString;
-
         File baseFolder = getBaseFolder();
         if (baseFolder == null) {
             // TODO: Return an error
@@ -338,7 +336,7 @@ public class RecordUtil {
         if (file.exists()) {
             deleteRecursive(file);
         }
-        mStoredRecordCount = 0;
+        mStoredRecordCount--;
     }
     /**
      * Recursively delete the files and sub folders of a specified file/directory

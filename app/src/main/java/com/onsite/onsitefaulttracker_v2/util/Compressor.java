@@ -40,7 +40,7 @@ public class Compressor {
 
     public void zip() {
         long _size;
-        int zipCount = 0;
+        int zipped = 0;
         try  {
             BufferedInputStream origin = null;
             FileOutputStream dest = new FileOutputStream(_zipFile);
@@ -60,7 +60,7 @@ public class Compressor {
                 while ((count = origin.read(data, 0, BUFFER)) != -1) {
                     out.write(data, 0, count);
                 }
-                mCompressorListener.dataRead(++zipCount);
+                mCompressorListener.zipCount(++zipped);
                 origin.close();
             }
             //Log.d("Compress", "Bytes: " + totalBytes + "B");

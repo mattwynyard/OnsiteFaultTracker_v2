@@ -210,26 +210,18 @@ public class PreviousRecordsAdapter extends BaseAdapter implements RecordUtil.De
         holder.mRecordSizeTextView.setText(sizeString);
         String recordingTimeString = CalculationUtil.sharedInstance().getDisplayValueFromMilliseconds(item.totalRecordTime) + " recorded";
         holder.mRecordingTimeTextView.setText(recordingTimeString);
-
-        if (item.fileUploadCount >= item.photoCount) {
+        if (item.fileUploadCount > item.photoCount) {
             // Item Finished
             holder.mProgressTextView.setText(mContext.getString(R.string.record_progress_finalized));
             holder.mProgressTextView.setTextColor(ContextCompat.getColor(mContext, R.color.finalized_red));
             holder.mUploadButton.setVisibility(View.INVISIBLE);
             holder.mRecordButton.setVisibility(View.INVISIBLE);
             holder.mDeleteButton.setVisibility(View.VISIBLE);
-        } else if (RecordUtil.sharedInstance().isRecordCurrent(item)) {
+        } else  {
             // Current Item and not finished
             holder.mProgressTextView.setText(mContext.getString(R.string.record_progress_in_progress));
             holder.mProgressTextView.setTextColor(ContextCompat.getColor(mContext, R.color.in_progress_green));
             holder.mUploadButton.setVisibility(View.INVISIBLE);
-            holder.mRecordButton.setVisibility(View.INVISIBLE);
-            holder.mDeleteButton.setVisibility(View.INVISIBLE);
-        } else {
-            // Not Current, Ready to submit
-            holder.mProgressTextView.setText(mContext.getString(R.string.record_progress_ready_to_submit));
-            holder.mProgressTextView.setTextColor(ContextCompat.getColor(mContext, R.color.ready_to_submit_blue));
-            holder.mUploadButton.setVisibility(View.VISIBLE);
             holder.mRecordButton.setVisibility(View.INVISIBLE);
             holder.mDeleteButton.setVisibility(View.INVISIBLE);
         }

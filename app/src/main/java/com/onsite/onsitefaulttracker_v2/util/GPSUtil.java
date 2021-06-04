@@ -75,7 +75,6 @@ public class GPSUtil implements LocationListener {
      * @param applicationContext The application context
      */
     public static void initialize(final Application applicationContext) {
-
         sGPSUtil = new GPSUtil(applicationContext);
     }
 
@@ -144,8 +143,6 @@ public class GPSUtil implements LocationListener {
             mLocation = location;
         }
 
-
-
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {
 
@@ -161,8 +158,6 @@ public class GPSUtil implements LocationListener {
 
         }
     };
-
-
 
     public int getSatellites() {
         return mSatellites;
@@ -201,7 +196,6 @@ public class GPSUtil implements LocationListener {
                     mSatellites++;
                 }
             }
-            //Log.d(TAG, "Satellites used in fix: " + mSatellites);
         }
 
         @Override
@@ -216,8 +210,6 @@ public class GPSUtil implements LocationListener {
         @Override
         public void onStarted() {
             super.onStarted();
-            //Log.d(TAG, "GPS_EVENT_STARTED...");
-            //LogUtil.sharedInstance().appendLog("Acquiring satellite fix...");
             Toast.makeText(mContext, "Acquiring satellite fix...",
                     Toast.LENGTH_SHORT).show();
 
@@ -225,9 +217,7 @@ public class GPSUtil implements LocationListener {
         @Override
         public void onStopped() {
             super.onStopped();
-            //LogUtil.sharedInstance().appendLog("GPS_EVENT_STOPPED...");
             Log.d(TAG, "GPS_EVENT_STOPPED...");
-
         }
     };
         if (ActivityCompat.checkSelfPermission(this.mContext, Manifest.permission.
@@ -251,27 +241,24 @@ public class GPSUtil implements LocationListener {
     public Location getLocation() {
         if (isGPSEnabled) {
             if (mLocation == null) {
-                Log.d(TAG, "Location Null");
                 mLocation = new Location(LocationManager.GPS_PROVIDER);
             }
             return mLocation;
         } else {
-            Log.d(TAG, "GPS not enabled");
-            Toast.makeText(mContext, "Error - GPS not enabled",
+            Toast.makeText(mContext, "Enabling GPS....",
                     Toast.LENGTH_SHORT).show();
             return null;
         }
     }
 
-
-    private boolean checkPermssion() {
-        return ActivityCompat.checkSelfPermission(mContext,
-                Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(mContext,
-                        Manifest.permission.ACCESS_COARSE_LOCATION) ==
-                        PackageManager.PERMISSION_GRANTED;
-    }
+//    private boolean checkPermssion() {
+//        return ActivityCompat.checkSelfPermission(mContext,
+//                Manifest.permission.ACCESS_FINE_LOCATION)
+//                == PackageManager.PERMISSION_GRANTED &&
+//                ActivityCompat.checkSelfPermission(mContext,
+//                        Manifest.permission.ACCESS_COARSE_LOCATION) ==
+//                        PackageManager.PERMISSION_GRANTED;
+//    }
 
     @Override
     public void onLocationChanged(Location location) {
@@ -288,7 +275,6 @@ public class GPSUtil implements LocationListener {
             }
         }
     }
-
     @Override
     public void onProviderDisabled(String provider) {
     }
@@ -300,7 +286,5 @@ public class GPSUtil implements LocationListener {
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
     }
-
-
 }
 

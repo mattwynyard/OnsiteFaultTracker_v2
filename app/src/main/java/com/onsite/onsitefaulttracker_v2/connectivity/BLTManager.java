@@ -315,11 +315,11 @@ public class BLTManager {
             while (mState != STATE_CONNECTED) {
                 try {
                     Log.i(TAG,  "Server socket listening");
-                    mSocket = mmServerSocket.accept();
                     setState(STATE_LISTEN);
+                    mSocket = mmServerSocket.accept();
+
                 } catch (IOException e) {
                     Log.e(TAG, "Socket's accept() method failed", e);
-                    LogUtil.sharedInstance().appendLog("Socket's accept() method failed");
                     break;
                 }
                 if (mSocket != null) {
@@ -327,7 +327,7 @@ public class BLTManager {
                     // the connection in a separate thread.
                     Log.i(TAG, "Bluetooth socket accepted connection");
                     Log.i(TAG, "Connected to: " + mSocket.getRemoteDevice().getAddress());
-                    setState(STATE_CONNECTED);
+
                     BusNotificationUtil.sharedInstance().postNotification(new BLTConnectedNotification());
                     try {
                         mWriterOut = new PrintWriter(mSocket.getOutputStream(), true);
@@ -339,6 +339,7 @@ public class BLTManager {
                     mReadThread.setName("ReadThread");
                     mReadThread.setPriority(MAX_PRIORITY);
                     mReadThread.start();
+                    setState(STATE_CONNECTED);
                 }
             }
         }
@@ -396,7 +397,6 @@ public class BLTManager {
                 Log.i(TAG, "Read thread started");
                 try {
                     in = mSocket.getInputStream();
-
                     while ((length = in.read(buffer)) != -1) {
                         String line = new String(buffer, 0, length);
                         Log.d(TAG, "Buffer: " + line);

@@ -313,13 +313,10 @@ public class HomeFragment extends BaseFragment {
             if (resultCode == BT_TIMEOUT || resultCode == 120) { //user selected OK
                 mAdvertising = true;
                 BusNotificationUtil.sharedInstance().postNotification(new BLTListeningNotification());
-                //requestStoragePermission();
-                //setBTName();
                 startBluetooth();
             } else {
                 mAdvertising = false;
                 BusNotificationUtil.sharedInstance().postNotification(new BLTNotConnectedNotification());
-                //setBTName();
             }
         }
     }
@@ -335,11 +332,6 @@ public class HomeFragment extends BaseFragment {
         return true;
     }
 
-//    private void setBTName() {
-//        String btname = "OnSite_BLT_Adapter_" + mInspector;
-//        BLTManager.sharedInstance().setBTName(btname);
-//    }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -353,7 +345,6 @@ public class HomeFragment extends BaseFragment {
                     }
                 } else {
                     Log.d(TAG, "Need phone permission");
-
                 }
                 return;
         }
@@ -407,7 +398,6 @@ public class HomeFragment extends BaseFragment {
             }
             String btname = "OnSite_BLT_Adapter_" + mInspector;
             BLTManager.sharedInstance().setBTName(btname);
-
         }
     }
 
@@ -415,7 +405,6 @@ public class HomeFragment extends BaseFragment {
      * Action when user clicks on continue button, continue recording the current record
      */
     private void onContinueButtonClicked() {
-
         if (mListener != null) {
             mListener.onNewRecord();
         }
