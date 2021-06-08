@@ -194,7 +194,7 @@ public class HomeFragment extends BaseFragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (BLTManager.sharedInstance().getState() != 3) {
+        if (BLTManager.sharedInstance().getState() != BLTManager.STATE_CONNECTED) {
             updateButtonStates();
         }
     }
@@ -208,7 +208,7 @@ public class HomeFragment extends BaseFragment {
         boolean hasCurrentRecord = r != null;
         if (hasCurrentRecord) {
             mNewRecordButton.setEnabled(false);
-            mContinueRecordButton.setEnabled(true);
+            mContinueRecordButton.setEnabled(r.fileUploadCount == 0);
             mPreviousRecordsButton.setEnabled(true);
             mSubmitRecordButton.setEnabled(r.photoCount > 0);
         } else {
@@ -414,7 +414,7 @@ public class HomeFragment extends BaseFragment {
      * Action when the user clicks on the submit button
      */
     private void onSubmitButtonClicked() {
-        if (BLTManager.sharedInstance().getState() == 3) { //bluetooth connected disable
+        if (BLTManager.sharedInstance().getState() == BLTManager.STATE_CONNECTED) { //bluetooth connected disable
             return;
         }
         final Record currentRecord = RecordUtil.sharedInstance().getCurrentRecord();
@@ -422,7 +422,6 @@ public class HomeFragment extends BaseFragment {
             mListener.onSubmitRecord(currentRecord.recordId);
         }
     }
-
     /**
      * Check for existing records
      */
@@ -440,7 +439,6 @@ public class HomeFragment extends BaseFragment {
             requestRecordName();
         }
     }
-
     /**
      * Requests a name for the new record from the user then creates a new record
      * with that name
@@ -463,7 +461,6 @@ public class HomeFragment extends BaseFragment {
             mListener.onNewRecord();
         }
     }
-
     /**
      * Show a dialog notifying the user that they must enter a name for the record
      */
@@ -474,7 +471,6 @@ public class HomeFragment extends BaseFragment {
                 .setPositiveButton(getString(android.R.string.ok), null)
                 .show();
     }
-
     /**
      * Creates a new record with the specified name
      *
@@ -491,7 +487,6 @@ public class HomeFragment extends BaseFragment {
                     .show();
         }
     }
-
     /**
      * Action when a user clicks on the previous records button
      */
@@ -500,7 +495,6 @@ public class HomeFragment extends BaseFragment {
             mListener.onPreviousRecords();
         }
     }
-
     /**
      * init the app version text box
      */
@@ -513,7 +507,6 @@ public class HomeFragment extends BaseFragment {
             mAppVersion.setText("");
         }
     }
-
     // **********************************************************
     //  Notifications
     // **********************************************************

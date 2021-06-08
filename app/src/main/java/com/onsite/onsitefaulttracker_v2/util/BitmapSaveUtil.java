@@ -178,8 +178,8 @@ public class BitmapSaveUtil {
                     return;
                 }
                 try {
-                    File file = new File(path + "/Photos/", filename + ".jpg");;
                     long start = System.currentTimeMillis();
+                    File file = new File(path + "/Photos/", filename + ".jpg");
                     OutputStream fOutputStream = new FileOutputStream(file);
                     float reductionScale = CalculationUtil.sharedInstance()
                             .estimateScaleValueForImageSize();
@@ -220,12 +220,12 @@ public class BitmapSaveUtil {
                     EXIFUtil.sharedInstance().geoTagFile(_file, timeStamp, location);
                     long finish = System.currentTimeMillis();
                     final long time = (finish - start);
-
                     //final Double saveTime = new BigDecimal(time).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
                     final long frequency = SettingsUtil.sharedInstance().getPictureFrequency();
                     if (BLTManager.sharedInstance().getState() == 3) {
                         sendMessage(gpsTimeStamp, filename, photo, time, frequency, jpegBytes);
                     }
+
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                     return;
