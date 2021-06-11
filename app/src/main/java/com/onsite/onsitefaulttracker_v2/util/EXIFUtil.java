@@ -19,13 +19,17 @@ public class EXIFUtil {
     private static final String TAG = EXIFUtil.class.getSimpleName();
     // The application context
     private Context mContext;
-    //    // The static instance of this class which will be initialized once then reused
-//    // throughout the app
-//    private static GPSUtil sGPSUtil;
-    // Shared Instance, to be initialized once and used throughout the application
     private static EXIFUtil sSharedInstance;
     private static EXIFUtil sEXIFUtil;
-
+    private final String datum = "WGS_84";
+    private Double latitude_ref;
+    private Double longitude_ref;
+    private Double altitude_ref;
+    private Long locationFixTime;
+    private Float speed = 0.0f;
+    private Float accuracy = 0.0f;
+    private final SimpleDateFormat dateStampFormat =  new SimpleDateFormat("yyyy:MM:dd");
+    private final SimpleDateFormat timeStampFormat =  new SimpleDateFormat("HH:mm:ss");
     /**
      * initializes GPSUtil.
      * @param context The application context
@@ -41,7 +45,6 @@ public class EXIFUtil {
      */
     public EXIFUtil(Context context) {
         mContext = context;
-
     }
     /**
      * return the shared instance of Record Util
@@ -58,21 +61,13 @@ public class EXIFUtil {
     }
 
     public void geoTagFile(String path, String correctedTimeStamp, Location location) {
-        String datum = "WGS_84";
-        Log.d("Corrected Timestamp: ", correctedTimeStamp);
-        Double latitude_ref;
-        Double longitude_ref;
-        Double altitude_ref;
-        Long locationFixTime = location.getTime();
-        Float speed = 0.0f;
-        Float accuracy = 0.0f;
+        locationFixTime = location.getTime();
         Double bearing_ref;
         if (location == null) {
             latitude_ref = -36.939318;
             longitude_ref = 174.892701;
             altitude_ref = 39.0;
             bearing_ref = 0.0;
-
         } else {
             locationFixTime = location.getTime();
             latitude_ref = location.getLatitude();
@@ -81,15 +76,12 @@ public class EXIFUtil {
             bearing_ref = Double.valueOf(location.getBearing());
             speed = location.getSpeed();
             accuracy = location.getAccuracy();
-
         }
         int satellites = GPSUtil.sharedInstance().getSatellites();
         String satStr = String.valueOf(satellites);
         String speedStr = formatEXIFFloat(speed, 10);
         String dop = formatEXIFFloat(accuracy, 10);
         Date fixTimeStamp = new Date(locationFixTime);
-        final SimpleDateFormat dateStampFormat =  new SimpleDateFormat("yyyy:MM:dd");
-        final SimpleDateFormat timeStampFormat =  new SimpleDateFormat("HH:mm:ss");
         String fixDate = dateStampFormat.format(fixTimeStamp);
         String fixTime = timeStampFormat.format(fixTimeStamp);
         String bearing = formatEXIFDouble(bearing_ref, 100);
@@ -98,16 +90,13 @@ public class EXIFUtil {
         String altitude = formatEXIFDouble(altitude_ref, 100);
         writeGeoTag(path, latitude, latitude_ref, longitude, longitude_ref, altitude, altitude_ref,
                 bearing, speedStr, satStr, dop, datum, fixDate, fixTime, correctedTimeStamp);
-        }
+    }
 
-    //--EXIF FUNCTIONS--
-//TODO fix for negative altitudes
     public void writeGeoTag(final String path, final String latitude, final Double latitude_ref,
                             final String longitude, final Double longitude_ref, final String altitude,
                             final Double altitude_ref, final String bearing, final String speed, final String satellites,
                             final String dop, final String datum, final String fixDate,
                             final String fixTime, final String timeStamp) {
-
         try {
             ExifInterface exif = new ExifInterface(path);
             exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE,
@@ -171,28 +160,4 @@ public class EXIFUtil {
         int seconds = (int)(((((d - (double)degrees) * 60) - (double)minutes) * 60) * precision);
         return String.format("%d/1,%d/1,%d/" + precision, degrees, minutes, seconds);
     }
-
-    private class EXIFTag {
-
-        String path;
-        String latitude;
-        Double latitude_ref;
-        String longitude;
-        Double longitude_ref;
-        String altitude;
-        Double altitude_ref;
-        String bearing;
-        String datum;
-        String systemDate;
-        String fixDate;
-        String systemTime;
-        String fixTime;
-
-        public EXIFTag() {
-
-        }
-
-    }
-
-
 }

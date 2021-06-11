@@ -47,7 +47,7 @@ public class RecordUtil {
     // The format of folder names when converted from a date
     private static final String FOLDER_DATE_FORMAT = "yy_MM_dd";
 
-    private static final String[] FOLDER_SUFFIXS = {"Photos"};
+    private static String FOLDER_SUFFIX;
 
     // The static instance of this class which will be initialized once then reused
     // throughout the app
@@ -115,6 +115,7 @@ public class RecordUtil {
     private RecordUtil(final Context context) {
         mContext = context;
         mGson = new Gson();
+        FOLDER_SUFFIX = SettingsUtil.sharedInstance().getDefaultPhotoFolder();
         loadRecordDetails();
     }
 
@@ -199,15 +200,23 @@ public class RecordUtil {
             mCurrentRecord = newRecord;
             saveCurrentRecord();
             newRecordPath.mkdir();
-            for (String ext: FOLDER_SUFFIXS) {
-                newRecordPath = new File(baseFolder.getAbsoluteFile() + "/" + newRecord.recordFolderName + "/" + ext) ;
-                newRecordPath.mkdir();
-            }
+            newRecordPath = new File(baseFolder.getAbsoluteFile() + "/" + newRecord.recordFolderName + "/" + FOLDER_SUFFIX) ;
+            newRecordPath.mkdir();
+
         } catch (Exception e) {
             Log.e(TAG, "Error saving snap, Record path does not exist");
             return false;
         }
         return true;
+    }
+
+    public void createNewFolder(String path) {
+        File folder = new File(path);
+        folder.mkdir();
+        if (!folder.exists()) {
+            Log.e(TAG, "Error creating folder");
+            return;
+        }
     }
 
     /**
@@ -336,6 +345,11 @@ public class RecordUtil {
         if (file.exists()) {
             deleteRecursive(file);
         }
+        BitmapSaveUtil.sharedInstance().reset();
+        SettingsUtil.sharedInstance().setPhotoCount(0);
+        SettingsUtil.sharedInstance().setPhotoFolder(SettingsUtil.sharedInstance().getDefaultPhotoFolder());
+        SettingsUtil.sharedInstance().deleteKey("Folder");
+        SettingsUtil.sharedInstance().deleteKey("PhotoCount");
         mStoredRecordCount--;
     }
     /**

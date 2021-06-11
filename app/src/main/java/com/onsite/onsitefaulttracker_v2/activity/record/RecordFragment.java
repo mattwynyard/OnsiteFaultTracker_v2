@@ -154,14 +154,11 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
             mExposureSeekBar.setVisibility(View.INVISIBLE);//TODO:TEMPHACK
             mPhotoCountTextView = (TextView)view.findViewById(R.id.photo_count);
             mConsecutiveBlankFrames = 0;
-
             mIntervalMillis = SettingsUtil.sharedInstance().getPictureFrequency();
             updateExposureSeekPosition();
             mExposureSeekBar.setOnSeekBarChangeListener(this);
-
             // Initialize record to the current record
             mRecord = RecordUtil.sharedInstance().getCurrentRecord();
-
             // Update the textview which displays the number of photos taken
             updatePhotoCountText();
 
@@ -178,7 +175,6 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
     public void onResume() {
         super.onResume();
         MessageUtil.sharedInstance().setRecording("R");
-        Log.i(TAG, "RECORD:RESUMED");
         // When the screen is turned off and turned back on, the SurfaceTexture is already
         // available, and "onSurfaceTextureAvailable" will not be called. In that case, we can open
         // a camera and start preview from here (otherwise, we wait until the surface is ready in
@@ -188,7 +184,6 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
         } else {
             mTextureView.setSurfaceTextureListener(mSurfaceTextureListener);
         }
-        // Register to receive bluetooth notifications
         BusNotificationUtil.sharedInstance().getBus().register(this);
     }
 
@@ -201,13 +196,13 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
         super.onPause();
         MessageUtil.sharedInstance().setRecording("N");
         String recordPath = RecordUtil.sharedInstance().getPathForRecord(mRecord);
-        recordPath += "/Photos";
-        Log.i(TAG, "RECORD:PAUSED");
         if (mStartedRecordingTime > 0) {
             long recordedTime = new Date().getTime() - mStartedRecordingTime;
             mRecord.totalRecordTime += recordedTime;
         }
         mRecord.totalSizeKB = BitmapSaveUtil.sharedInstance().getPhotoBytes();
+        mRecord.photoCount = BitmapSaveUtil.sharedInstance().getPhotoCount();
+        SettingsUtil.sharedInstance().setPhotoCount(mRecord.photoCount);
         CameraUtil.sharedInstance().closeCamera();
         RecordUtil.sharedInstance().saveCurrentRecord();
         BusNotificationUtil.sharedInstance().getBus().unregister(this);
@@ -236,11 +231,9 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
         if (!mRecording) {
             return;
         }
-
         // Grab a bitmap from the current display on the texture view
         final Bitmap snapBitmap = mTextureView.getBitmap();
         // If the bitmap is valid save it as the next image using the BitmapSaveUtil
-       //TODO:TEMPHACK if (snapBitmap != null && snapBitmap.getWidth() > 0 && snapBitmap.getHeight() > 0) {
         if (snapBitmap != null && snapBitmap.getHeight() > 0 && snapBitmap.getWidth() > 0) {
             mConsecutiveBlankFrames = 0;
             boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
@@ -253,31 +246,25 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
             // Check the result of saving the bitmap for low dis space or error
             // because of no disk space
             if (saveResult != BitmapSaveUtil.SaveBitmapResult.Error) {
+                mRecord.photoCount++;
+                //Log.i(TAG, "Photo Count: " + mRecord.photoCount);
+                //Log.i(TAG, "Blank Frames: " + mConsecutiveBlankFrames);
+                updatePhotoCountText();
                 if (saveResult == BitmapSaveUtil.SaveBitmapResult.SaveLowDiskSpace) {
                     if (!mDisplayedLowDiskError) {
                         displayLowDiskSpaceError();
                         mDisplayedLowDiskError = true;
-                    }
-                    if (currentTime - mLastWarningSoundedTime >= SOUND_WARNING_INTERVAL) {
-                        mLastWarningSoundedTime = currentTime;
-                        //playWarningSound();
                     }
                 } else {
                     if (BLTManager.sharedInstance().getState() == 3) {
                         MessageUtil.sharedInstance().setError(0);
                     }
                 }
-                mRecord.photoCount++;
-                Log.i(TAG, "Photo Count: " + mRecord.photoCount);
-                Log.i(TAG, "Blank Frames: " + mConsecutiveBlankFrames);
-                updatePhotoCountText();
-
             } else {
                 // There is not enough disk space to save any more photos,
                 // display an error and then close the fragment
                 onOutOfDiskSpaceError();
             }
-
             // Check the battery level every now and then to make sure it isn't running low
             if (currentTime - mLastBatteryCheckedTime >= CHECK_BATTERY_INTERVAL) {
                 mLastBatteryCheckedTime = currentTime;
@@ -365,26 +352,10 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
 
         }
     }
-
-    /**
-     * Play the warning sound
-     */
-    private void playWarningSound() {
-        MediaPlayer mp = MediaPlayer.create(getActivity().getApplicationContext(), R.raw.a_tone);
-        mp.start();
-
-        Log.e(TAG, "*******************************************************");
-        Log.e(TAG, "* WARNING                                             *");
-        Log.e(TAG, "*******************************************************");
-        Log.e(TAG, "* CHECK DEVICE FOR WARNING                            *");
-        Log.e(TAG, "*******************************************************");
-    }
-
     /**
      * Display the low disk space warning to the user
      */
     private void displayLowDiskSpaceError() {
-
         if (BLTManager.sharedInstance().getState() == 3) {
             MessageUtil.sharedInstance().setError(1);
         } else {
@@ -393,7 +364,6 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
                     .setMessage(getString(R.string.record_low_disk_space_dialog_message))
                     .setPositiveButton(getString(android.R.string.ok), null)
                     .show();
-
             Log.e(TAG, "*******************************************************");
             Log.e(TAG, "* WARNING                                             *");
             Log.e(TAG, "*******************************************************");
@@ -406,22 +376,16 @@ public class RecordFragment extends BaseFragment implements CameraUtil.CameraCon
      * Display the low battery warning to the user
      */
     private void displayLowBatteryError() {
-
-        if (BLTManager.sharedInstance().getState() == 3) {
-            //BLTManager.sharedInstance().sendPhoto("B:LOW CAMERA BATTERY,", null);
-        } else {
             new AlertDialog.Builder(getActivity())
                     .setTitle(getString(R.string.record_low_battery_dialog_title))
                     .setMessage(getString(R.string.record_low_battery_dialog_message))
                     .setPositiveButton(getString(android.R.string.ok), null)
                     .show();
-
             Log.e(TAG, "*******************************************************");
             Log.e(TAG, "* WARNING                                             *");
             Log.e(TAG, "*******************************************************");
             Log.e(TAG, "* LOW BATTERY                                         *");
             Log.e(TAG, "*******************************************************");
-        }
     }
 
     /**

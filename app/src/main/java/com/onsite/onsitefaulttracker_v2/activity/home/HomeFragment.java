@@ -203,7 +203,7 @@ public class HomeFragment extends BaseFragment {
      * Update the state of the buttons
      */
     private void updateButtonStates() {
-        String inspector = SettingsUtil.sharedInstance().getCameraId();
+        String inspector = SettingsUtil.sharedInstance().getInspectorId();
         Record r = RecordUtil.sharedInstance().getCurrentRecord();
         boolean hasCurrentRecord = r != null;
         if (hasCurrentRecord) {
@@ -388,7 +388,7 @@ public class HomeFragment extends BaseFragment {
         if (requestStoragePermission()) {
             return;
         }
-        mInspector = SettingsUtil.sharedInstance().getCameraId();
+        mInspector = SettingsUtil.sharedInstance().getInspectorId();
         if (mInspector ==  "") {
             showInspectorMustBeEntered();
         } else {

@@ -215,7 +215,7 @@ public class SettingsFragment extends BaseFragment implements SettingItem.Listen
      */
     private void setInitialValues() {
         //SettingsUtil.sharedInstance().resetSettings();
-        mCameraId = SettingsUtil.sharedInstance().getCameraId();
+        mCameraId = SettingsUtil.sharedInstance().getInspectorId();
         mFrequencyMilliseconds = SettingsUtil.sharedInstance().getPictureFrequency();
         mImageSize = SettingsUtil.sharedInstance().getImageSize();
         mRecordingHours = SettingsUtil.sharedInstance().getRecordingHours();
@@ -417,7 +417,7 @@ public class SettingsFragment extends BaseFragment implements SettingItem.Listen
         changeCameraIdInput.setLayoutParams(changeCameraIdParams);
         changeCameraIdInput.setSingleLine();
         changeCameraIdInput.setInputType(InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
-        changeCameraIdInput.setText(SettingsUtil.sharedInstance().getCameraId());
+        changeCameraIdInput.setText(SettingsUtil.sharedInstance().getInspectorId());
         changeCameraIdLayout.addView(changeCameraIdInput);
 
         final AlertDialog d = new AlertDialog.Builder(getActivity())

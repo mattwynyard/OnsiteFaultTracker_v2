@@ -38,7 +38,11 @@ public class SettingsUtil {
     private static final String KEY_FRAME_DURATION_PERCENTAGE = "frame_duration";
 
     // The id of the current camera
-    private static final String KEY_CAMERA_ID = "camera_id";
+    private static final String KEY_INSPECTOR_ID = "inpsector_id";
+
+    private static final String DEFAULT_FOLDER = "Photos";
+
+    private static final int DEFAULT_COUNT = 0;
 
     // The default value for picture frequency
     private static final long DEFAULT_PICTURE_FREQUENCY = 1000;
@@ -93,10 +97,14 @@ public class SettingsUtil {
     private float mFocusDistance;
 
     // The camera id of this device
-    private String mCameraId;
+    private String mInspectorId;
 
     // The application context
     private Context mContext;
+
+    private String mFolder;
+
+    private int mPhotoCount;
 
     // Is currently recording
     private boolean mCurrentlyRecording;
@@ -144,9 +152,47 @@ public class SettingsUtil {
         mPictureFrequencyMillis = sharedPreferences.getLong(KEY_PICTURE_FREQUENCY, DEFAULT_PICTURE_FREQUENCY);
         mUsualRecordingHours = sharedPreferences.getFloat(KEY_RECORDING_HOURS, DEFAULT_RECORD_HOURS);
         mExposure = sharedPreferences.getLong(KEY_EXPOSURE, DEFAULT_EXPOSURE);
-        mCameraId = sharedPreferences.getString(KEY_CAMERA_ID, "");
+        mInspectorId = sharedPreferences.getString(KEY_INSPECTOR_ID, "");
         mFrameDuration = sharedPreferences.getLong(KEY_FRAME_DURATION_PERCENTAGE, DEFAULT_FRAME_DURATION_PERCENTAGE);
         mFocusDistance = sharedPreferences.getFloat(KEY_FOCUS_DISTANCE, DEFAULT_FOCUS_DISTANCE);
+        mFolder = sharedPreferences.getString("Folder", DEFAULT_FOLDER);
+        mPhotoCount = sharedPreferences.getInt("PhotoCount", DEFAULT_COUNT);
+
+    }
+
+    public void deleteKey(String key) {
+        SharedPreferences preferences = mContext.getSharedPreferences(SETTINGS_PREFERENCES, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.remove(key);
+        editor.apply();
+    }
+
+    public String getDefaultPhotoFolder() {
+        return DEFAULT_FOLDER;
+    }
+
+    public int getPhotoCount() {
+        return mPhotoCount;
+    }
+
+    public void setPhotoCount(int count) {
+        mPhotoCount = count;
+        SharedPreferences preferences = mContext.getSharedPreferences(SETTINGS_PREFERENCES, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putInt("PhotoCount", count);
+        editor.apply();
+    }
+
+    public void setPhotoFolder(String folder) {
+        mFolder = folder;
+        SharedPreferences preferences = mContext.getSharedPreferences(SETTINGS_PREFERENCES, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString("Folder", mFolder);
+        editor.apply();
+    }
+
+    public String getCurrentPhotoFolder() {
+        return mFolder;
     }
 
     /**
@@ -307,13 +353,13 @@ public class SettingsUtil {
     /**
      * Set the camera id for this device
      *
-     * @param cameraId The camera id to set this device to
+     * @param inspector The camera id to set this device to
      */
-    public void setCameraId(final String cameraId) {
-        mCameraId = cameraId;
+    public void setCameraId(final String inspector) {
+        mInspectorId = inspector;
         SharedPreferences preferences = mContext.getSharedPreferences(SETTINGS_PREFERENCES, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(KEY_CAMERA_ID, mCameraId);
+        editor.putString(KEY_INSPECTOR_ID, mInspectorId);
         editor.apply();
     }
 
@@ -322,7 +368,7 @@ public class SettingsUtil {
      *
      * @return the camera id of this device
      */
-    public String getCameraId() {
-        return mCameraId;
+    public String getInspectorId() {
+        return mInspectorId;
     }
 }
