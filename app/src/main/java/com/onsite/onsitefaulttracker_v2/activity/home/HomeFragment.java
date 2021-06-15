@@ -242,7 +242,6 @@ public class HomeFragment extends BaseFragment {
                     && now.get(Calendar.YEAR) == recordCalendar.get(Calendar.YEAR);
             String prefixString = isToday ? "(Today) " :
                     isYesterday ? "(Yesterday)" : "";
-
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MMMM yyyy, h:mm a");
             mCurrentRecordName.setText("Current record: " + currentRecord.recordName);
             mCurrentRecordDate.setText("Created on: " + prefixString + simpleDateFormat.format(currentRecord.creationDate));

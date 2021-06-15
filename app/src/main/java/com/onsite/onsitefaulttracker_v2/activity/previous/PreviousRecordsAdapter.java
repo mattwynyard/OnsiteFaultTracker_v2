@@ -162,8 +162,6 @@ public class PreviousRecordsAdapter extends BaseAdapter implements RecordUtil.De
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
         View vi = convertView;
-
-
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             vi = inflater.inflate(R.layout.record_list_item, parent, false);
@@ -188,7 +186,6 @@ public class PreviousRecordsAdapter extends BaseAdapter implements RecordUtil.De
         } else {
             holder = (ViewHolder) vi.getTag();
         }
-
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MMMM yyyy, h:mm a");
         final Record item = (Record) getItem(position);
         Calendar now = Calendar.getInstance();
@@ -206,7 +203,7 @@ public class PreviousRecordsAdapter extends BaseAdapter implements RecordUtil.De
                 simpleDateFormat.format(item.creationDate));
 
         holder.mImageCountTextView.setText(String.format("%d images", item.photoCount));
-        String sizeString = CalculationUtil.sharedInstance().getDisplayValueFromKB(item.recordSizeKB) + " in storage";
+        String sizeString = CalculationUtil.sharedInstance().getDisplayValueFromKB(item.totalSizeKB) + " in storage";
         holder.mRecordSizeTextView.setText(sizeString);
         String recordingTimeString = CalculationUtil.sharedInstance().getDisplayValueFromMilliseconds(item.totalRecordTime) + " recorded";
         holder.mRecordingTimeTextView.setText(recordingTimeString);

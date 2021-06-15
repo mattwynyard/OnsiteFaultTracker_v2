@@ -48,7 +48,7 @@ public class Compressor {
             byte data[] = new byte[BUFFER];
 
             for(int i = 0; i < _files.length; i++) {
-                Log.v("Compress", "Adding: " + _files[i]);
+                //Log.v("Compress", "Adding: " + _files[i]);
                 _size = new File(_files[i]).length();
                 //totalBytes += _size;
                 FileInputStream fi = new FileInputStream(_files[i]);

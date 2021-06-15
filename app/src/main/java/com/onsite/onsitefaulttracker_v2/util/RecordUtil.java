@@ -21,6 +21,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Created by hihi on 6/23/2016.
@@ -28,46 +29,33 @@ import java.util.UUID;
  * RecordUtil,  Utility class for handling saving and retrieving record details.
  */
 public class RecordUtil {
-
     // The tag name of this utility class
     private static final String TAG = Record.class.getSimpleName();
-
     // The folder where all records will be stored
     private static final String RECORD_STORAGE_FOLDER = "/OnSite";
-
     private final String EXTERNAL_SD_CARD =
             "./storage/0000-0000/Android/data/com.onsite.onsitefaulttracker/files";
-
     // The record preferences name
     private static final String RECORD_PREFERENCES = "record_prefs";
-
     // The current record keys
     private static final String CURRENT_RECORD_KEY = "current_record";
-
     // The format of folder names when converted from a date
     private static final String FOLDER_DATE_FORMAT = "yy_MM_dd";
-
     private static String FOLDER_SUFFIX;
-
     // The static instance of this class which will be initialized once then reused
     // throughout the app
     private static RecordUtil sRecordUtil;
-
     // The number of records in storage
     private int mStoredRecordCount;
-
     private int mDeletedPhotoCount = 0;
-
     // The current active record
     private Record mCurrentRecord;
-
     // Gson object which converts json strings to objects and vice versa
     private Gson mGson;
-
     // The application context
     private Context mContext;
-
     private DeleteListener mDeleteListener;
+    private ExecutorService mPool;
 
     /**
      * Interface for communicating with the parent fragment/activity
@@ -267,8 +255,8 @@ public class RecordUtil {
                 if (record == null) {
                     continue;
                 }
-                updateRecordCurrentSize(record);
-                updateRecordCurrentImageCount(record);
+                //updateRecordCurrentSize(record);
+                //updateRecordCurrentImageCount(record);
                 resultList.add(record);
             }
         }
@@ -291,12 +279,18 @@ public class RecordUtil {
             String recordPath = getPathForRecord(record);
             File recordFolder = !TextUtils.isEmpty(recordPath) ? new File(recordPath) : null;
             ArrayList<File> logFiles = new ArrayList<File>();
-            File[] photosToZip = null;
+            File[] photosToZip = new File[0];
             if (recordFolder != null) {
-                for (File f:recordFolder.listFiles()) {
+                File []files = recordFolder.listFiles();
+                for (File f:files) {
                     if (f.isDirectory()) {
-                        photosToZip = f.listFiles();
-
+                        File[] photosToAdd = f.listFiles();
+                        int lenA = photosToZip.length;
+                        int lenB = photosToAdd.length;
+                        File[] result = new File[lenA + lenB];
+                        System.arraycopy(photosToZip, 0, result, 0, lenA);
+                        System.arraycopy(photosToAdd, 0, result, lenA, lenB);
+                        photosToZip = result;
                     } else {
                         logFiles.add(f);
                     }
@@ -311,7 +305,6 @@ public class RecordUtil {
             } else {
                 return null;
             }
-            //return recordFolder != null ? recordFolder.listFiles() : null;
         }
         return null;
     }
@@ -340,6 +333,7 @@ public class RecordUtil {
             mCurrentRecord = null;
             saveCurrentRecord();
         }
+        mPool = BitmapSaveUtil.sharedInstance().getThreadPool();
         final String path = getPathForRecord(record);
         File file = new File(path);
         if (file.exists()) {
@@ -358,11 +352,18 @@ public class RecordUtil {
      */
     private void deleteRecursive(File fileOrDirectory) {
         if (fileOrDirectory.isDirectory()) {
-            for (File child : fileOrDirectory.listFiles()) {
-                deleteRecursive(child);
+            File[] files = fileOrDirectory.listFiles();
+            for (File child : files) {
+                //Runnable task = () -> {
+                    deleteRecursive(child);
+                //};
+                //mPool.execute(task);
             }
         }
+        //Runnable task2 = () -> {
         fileOrDirectory.delete();
+        //};
+        //mPool.execute(task2);
         mDeleteListener.deleted(++mDeletedPhotoCount);
     }
     /**
