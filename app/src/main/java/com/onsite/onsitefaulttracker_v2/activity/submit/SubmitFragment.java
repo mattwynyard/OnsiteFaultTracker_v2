@@ -218,7 +218,6 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
      */
     private void onSubmitClicked() {
         mSubmitting = true;
-        // TODO: REMOVE DROP BOX CLIENT REFERENCES
         mRecordFiles = RecordUtil.sharedInstance().getRecordFiles(mRecord.recordId);
         if (mRecordFiles == null) {
             return;
@@ -240,10 +239,7 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
         ThreadUtil.executeOnNewThread(new Runnable() {
             @Override
             public void run() {
-                //Log.i(TAG, "START ZIP");
-                //Compressor compressor = new Compressor(fileNames, outPath);
                 compressor.zip();
-                //Log.i(TAG, "END ZIP");
                 ThreadUtil.executeOnMainThread(new Runnable() {
                     @Override
                     public void run() {

@@ -335,36 +335,29 @@ public class RecordUtil {
         }
         mPool = BitmapSaveUtil.sharedInstance().getThreadPool();
         final String path = getPathForRecord(record);
-        File file = new File(path);
-        if (file.exists()) {
-            deleteRecursive(file);
+        File folder = new File(path);
+        if (folder.exists()) {
+            deleteSafe(folder);
         }
         BitmapSaveUtil.sharedInstance().reset();
-        SettingsUtil.sharedInstance().setPhotoCount(0);
-        SettingsUtil.sharedInstance().setPhotoFolder(SettingsUtil.sharedInstance().getDefaultPhotoFolder());
-        SettingsUtil.sharedInstance().deleteKey("Folder");
-        SettingsUtil.sharedInstance().deleteKey("PhotoCount");
         mStoredRecordCount--;
     }
-    /**
-     * Recursively delete the files and sub folders of a specified file/directory
-     * @param fileOrDirectory
-     */
-    private void deleteRecursive(File fileOrDirectory) {
-        if (fileOrDirectory.isDirectory()) {
-            File[] files = fileOrDirectory.listFiles();
-            for (File child : files) {
-                //Runnable task = () -> {
-                    deleteRecursive(child);
-                //};
-                //mPool.execute(task);
+
+    private void deleteSafe(File baseFolder) {
+        File[] files = baseFolder.listFiles();
+        for (File f : files) {
+            if (f.isDirectory()) {
+                File[] photos = f.listFiles();
+                for (File photo : photos) {
+                    photo.delete();
+                    mDeleteListener.deleted(++mDeletedPhotoCount);
+                }
+                f.delete();
+            } else {
+                f.delete();
             }
         }
-        //Runnable task2 = () -> {
-        fileOrDirectory.delete();
-        //};
-        //mPool.execute(task2);
-        mDeleteListener.deleted(++mDeletedPhotoCount);
+        baseFolder.delete();
     }
     /**
      * return all the records for a specified date

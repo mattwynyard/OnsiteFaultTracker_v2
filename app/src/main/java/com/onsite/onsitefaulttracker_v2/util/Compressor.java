@@ -48,9 +48,7 @@ public class Compressor {
             byte data[] = new byte[BUFFER];
 
             for(int i = 0; i < _files.length; i++) {
-                //Log.v("Compress", "Adding: " + _files[i]);
                 _size = new File(_files[i]).length();
-                //totalBytes += _size;
                 FileInputStream fi = new FileInputStream(_files[i]);
                 mCompressorListener.dataRead(_size);
                 origin = new BufferedInputStream(fi, BUFFER);
@@ -63,7 +61,6 @@ public class Compressor {
                 mCompressorListener.zipCount(++zipped);
                 origin.close();
             }
-            //Log.d("Compress", "Bytes: " + totalBytes + "B");
             out.close();
         } catch(Exception e) {
             e.printStackTrace();

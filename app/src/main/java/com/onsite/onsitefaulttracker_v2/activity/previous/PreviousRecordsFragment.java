@@ -106,7 +106,13 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
         mRecords = RecordUtil.sharedInstance().getAllSavedRecords();
         mPreviousRecordsAdapter = new PreviousRecordsAdapter(mRecords, getActivity());
         mPreviousRecordsAdapter.setRecordItemListener(this);
-        mPreviousRecordsList.setAdapter(mPreviousRecordsAdapter);
+        ThreadUtil.executeOnMainThread(new Runnable() {
+            @Override
+            public void run() {
+                mPreviousRecordsList.setAdapter(mPreviousRecordsAdapter);
+            }
+        });
+
     }
 
     /**
@@ -120,7 +126,11 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
         ThreadUtil.executeOnNewThread(new Runnable() {
             @Override
             public void run() {
-                RecordUtil.sharedInstance().deleteRecord(record);
+                try {
+                    RecordUtil.sharedInstance().deleteRecord(record);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
                 populatePreviousRecordsList();
             }
         });

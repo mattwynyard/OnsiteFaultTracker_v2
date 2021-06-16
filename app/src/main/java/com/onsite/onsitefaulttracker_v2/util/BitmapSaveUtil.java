@@ -118,6 +118,10 @@ public class BitmapSaveUtil {
     public void reset() {
         count = new AtomicInteger(0);
         mFolder = SettingsUtil.sharedInstance().getDefaultPhotoFolder();
+        SettingsUtil.sharedInstance().setPhotoCount(0);
+        SettingsUtil.sharedInstance().setPhotoFolder(SettingsUtil.sharedInstance().getDefaultPhotoFolder());
+        SettingsUtil.sharedInstance().deleteKey("Folder");
+        SettingsUtil.sharedInstance().deleteKey("PhotoCount");
     }
 
     private Calendar correctDateTime() {
