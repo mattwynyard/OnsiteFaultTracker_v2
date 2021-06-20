@@ -20,6 +20,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.onsite.onsitefaulttracker_v2.R;
 import com.onsite.onsitefaulttracker_v2.activity.BaseFragment;
@@ -156,6 +157,12 @@ public class HomeFragment extends BaseFragment {
                 ActivityCompat.requestPermissions(getActivity(), PERMISSIONS, PERMISSION_ALL);
             }
             enableBluetooth();
+            mInspector = SettingsUtil.sharedInstance().getInspectorId();
+            System.out.println("Inpsector: " + mInspector);
+            if (mInspector != null || mInspector != "") {
+                String btname = "OnSite_BLT_Adapter_" + mInspector;
+                BLTManager.sharedInstance().setBTName(btname);
+            }
         }
         return view;
     }
@@ -490,6 +497,8 @@ public class HomeFragment extends BaseFragment {
      * Action when a user clicks on the previous records button
      */
     private void onPreviousRecordsClicked() {
+        Toast.makeText(mContext, "Succesfull satellite fix!",
+                Toast.LENGTH_SHORT).show();
         if (mListener != null) {
             mListener.onPreviousRecords();
         }

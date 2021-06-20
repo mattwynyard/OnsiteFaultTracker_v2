@@ -10,6 +10,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
+import android.widget.Toast;
+
 import com.onsite.onsitefaulttracker_v2.model.notifcation_events.BLTStartRecordingEvent;
 import com.onsite.onsitefaulttracker_v2.model.notifcation_events.BLTStopRecordingEvent;
 import com.onsite.onsitefaulttracker_v2.util.BatteryUtil;
@@ -196,7 +198,8 @@ public class BLTManager {
     }
 
     public void setBTName(String id) {
-        Log.d(TAG, "Phone Id: " + id);
+        Toast.makeText(mApplicationContext, "setting bluetooth name: " + id,
+                Toast.LENGTH_LONG).show();
         mBluetoothAdapter.setName(id);
     }
 
