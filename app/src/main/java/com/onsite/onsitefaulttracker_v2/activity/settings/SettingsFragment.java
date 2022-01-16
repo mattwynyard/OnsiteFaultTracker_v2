@@ -214,12 +214,14 @@ public class SettingsFragment extends BaseFragment implements SettingItem.Listen
      * Sets the initial values of the sliders and the value text views
      */
     private void setInitialValues() {
-        mCameraId = SettingsUtil.sharedInstance().getCameraId();
+        //SettingsUtil.sharedInstance().resetSettings();
+        mCameraId = SettingsUtil.sharedInstance().getInspectorId();
         mFrequencyMilliseconds = SettingsUtil.sharedInstance().getPictureFrequency();
         mImageSize = SettingsUtil.sharedInstance().getImageSize();
         mRecordingHours = SettingsUtil.sharedInstance().getRecordingHours();
         mFrameDuration = SettingsUtil.sharedInstance().getFrameDurationPercentage();
         mFocusDistance = SettingsUtil.sharedInstance().getFocusDistance();
+
 
         // Set the seek bar positions
         updateFrequencySeekPosition();
@@ -330,6 +332,7 @@ public class SettingsFragment extends BaseFragment implements SettingItem.Listen
      */
     private void updateFrequencyTextView(final long frequencyMilliseconds) {
         mFrequencyItem.setValue((frequencyMilliseconds / 1000.0f));
+        //SettingsUtil.sharedInstance().setPictureFrequency(frequencyMilliseconds);
     }
 
     /**
@@ -414,7 +417,7 @@ public class SettingsFragment extends BaseFragment implements SettingItem.Listen
         changeCameraIdInput.setLayoutParams(changeCameraIdParams);
         changeCameraIdInput.setSingleLine();
         changeCameraIdInput.setInputType(InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
-        changeCameraIdInput.setText(SettingsUtil.sharedInstance().getCameraId());
+        changeCameraIdInput.setText(SettingsUtil.sharedInstance().getInspectorId());
         changeCameraIdLayout.addView(changeCameraIdInput);
 
         final AlertDialog d = new AlertDialog.Builder(getActivity())

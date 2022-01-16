@@ -4,6 +4,8 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +17,7 @@ import android.widget.TextView;
 import com.onsite.onsitefaulttracker_v2.R;
 import com.onsite.onsitefaulttracker_v2.activity.BaseFragment;
 import com.onsite.onsitefaulttracker_v2.model.Record;
+import com.onsite.onsitefaulttracker_v2.util.BusNotificationUtil;
 import com.onsite.onsitefaulttracker_v2.util.RecordUtil;
 import com.onsite.onsitefaulttracker_v2.util.ThreadUtil;
 
@@ -44,6 +47,7 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
     // Listener for communicating with the parent activity
     private Listener mListener;
 
+    private Handler mHandler;
     /**
      * On create view, Override this in each extending fragment to implement initialization for that
      * fragment.
@@ -82,6 +86,7 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
         if (context instanceof Listener) {
             mListener = (Listener)context;
         }
+        BusNotificationUtil.sharedInstance().getBus().register(this);
     }
 
     /**
@@ -90,8 +95,8 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
     @Override
     public void onDetach() {
         super.onDetach();
-
         mListener = null;
+        BusNotificationUtil.sharedInstance().getBus().unregister(this);
     }
 
     /**
@@ -101,7 +106,13 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
         mRecords = RecordUtil.sharedInstance().getAllSavedRecords();
         mPreviousRecordsAdapter = new PreviousRecordsAdapter(mRecords, getActivity());
         mPreviousRecordsAdapter.setRecordItemListener(this);
-        mPreviousRecordsList.setAdapter(mPreviousRecordsAdapter);
+        ThreadUtil.executeOnMainThread(new Runnable() {
+            @Override
+            public void run() {
+                mPreviousRecordsList.setAdapter(mPreviousRecordsAdapter);
+            }
+        });
+
     }
 
     /**
@@ -110,10 +121,16 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
      * @param record
      */
     private void deleteRecord(final Record record) {
-        RecordUtil.sharedInstance().deleteRecord(record);
-        ThreadUtil.executeOnMainThread(new Runnable() {
+        RecordUtil.sharedInstance().setDeleteListener(mPreviousRecordsAdapter);
+        mPreviousRecordsAdapter.setCounter(record.photoCount);
+        ThreadUtil.executeOnNewThread(new Runnable() {
             @Override
             public void run() {
+                try {
+                    RecordUtil.sharedInstance().deleteRecord(record);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
                 populatePreviousRecordsList();
             }
         });
@@ -126,6 +143,7 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
      */
     private void confirmDeleteRecord(final Record record) {
         boolean recordFinalized = record.uploadedSizeKB >= record.totalSizeKB;
+
         String deleteMessage = recordFinalized ? getString(R.string.delete_previous_record_message) :
                 getString(R.string.delete_previous_record_not_finalized_message);
 

@@ -11,7 +11,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,6 +20,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.onsite.onsitefaulttracker_v2.R;
 import com.onsite.onsitefaulttracker_v2.activity.BaseFragment;
@@ -34,16 +34,19 @@ import com.onsite.onsitefaulttracker_v2.model.notifcation_events.UsbConnectedNot
 import com.onsite.onsitefaulttracker_v2.model.notifcation_events.UsbDisconnectedNotification;
 
 import com.onsite.onsitefaulttracker_v2.model.notifcation_events.BLTListeningNotification;
-
-import com.onsite.onsitefaulttracker_v2.util.BatteryUtil;
 import com.onsite.onsitefaulttracker_v2.util.BusNotificationUtil;
+import com.onsite.onsitefaulttracker_v2.util.GPSUtil;
+import com.onsite.onsitefaulttracker_v2.util.LogUtil;
 import com.onsite.onsitefaulttracker_v2.util.RecordUtil;
 import com.onsite.onsitefaulttracker_v2.util.SettingsUtil;
 import com.squareup.otto.Subscribe;
 
+import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+
+import static java.lang.Boolean.FALSE;
 
 
 /**
@@ -59,69 +62,45 @@ public class HomeFragment extends BaseFragment {
 
     // The tag name for this fragment
     private static final String TAG = HomeFragment.class.getSimpleName();
-
     private Context mContext;
-
     // the request code for the camera permissions
     private static final int CAMERA_PERMISSION_REQUEST_CODE = 1;
-
     // the request code for the storage permissions
     private static final int STORAGE_PERMISSION_REQUEST_CODE = 2;
-
     private static final int READ_PHONE_STATE_REQUEST_CODE = 4;
-
     private static final int PERMISSION_ALL = 99;
-
     private static final int REQUEST_ENABLE_DISCOVERY = 44;
     private static final int REQUEST_ENABLE_BT = 45;
-
     private final int BT_TIMEOUT = 1200; //seconds
-
-    String[] PERMISSIONS = {
-            //android.Manifest.permission.ACCESS_COARSE_LOCATION,
-            //android.Manifest.permission.ACCESS_FINE_LOCATION,
+    private String[] PERMISSIONS = {
+            android.Manifest.permission.ACCESS_COARSE_LOCATION,
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
             android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            android.Manifest.permission.CAMERA,
-            android.Manifest.permission.READ_PHONE_STATE
+            android.Manifest.permission.CAMERA
     };
-
     // The display date format to display to the user
     private static final String DISPLAY_DATE_FORMAT = "dd MMM yyyy";
-
     private boolean mAdvertising = false;
-
     private boolean bluetooth = false;
-
-    private String mCamera;
-    private String mSerialNumber;
-
+    private String mInspector;
     // The current record name
     private TextView mCurrentRecordName;
-
     // The current record date
     private TextView mCurrentRecordDate;
-
     // The New Record Button
     private Button mNewRecordButton;
-
     // The Continue Last Record Button
     private Button mContinueRecordButton;
-
     // The submit button
     private Button mSubmitRecordButton;
-
     // The Previous Records button
     private Button mPreviousRecordsButton;
-
     // The connection status
     private TextView mConnectionStatusTextView;
-
     // Text View that displays the application version
     private TextView mAppVersion;
-
     // Listener for communicating with the parent activity
     private Listener mListener;
-
     // Tcp Connection runnable
     private TcpConnection mTcpConnection; // TODO:TEMPHACK TEST
 
@@ -169,35 +148,23 @@ public class HomeFragment extends BaseFragment {
                     onPreviousRecordsClicked();
                 }
             });
-
             mCurrentRecordName = (TextView) view.findViewById(R.id.current_record_name);
             mCurrentRecordDate = (TextView) view.findViewById(R.id.current_record_date);
             mConnectionStatusTextView = (TextView) view.findViewById(R.id.connected_text_view);
-
             mAppVersion = (TextView) view.findViewById(R.id.app_version_text_view);
             initAppVersionText();
             if(!hasPermissions(mContext, PERMISSIONS)) {
                 ActivityCompat.requestPermissions(getActivity(), PERMISSIONS, PERMISSION_ALL);
             }
-
             enableBluetooth();
-            if (SettingsUtil.sharedInstance().getCameraId() !=  "") {
-                mCamera = SettingsUtil.sharedInstance().getCameraId();
-                setBTName();
+            mInspector = SettingsUtil.sharedInstance().getInspectorId();
+            System.out.println("Inpsector: " + mInspector);
+            if (mInspector != null || mInspector != "") {
+                String btname = "OnSite_BLT_Adapter_" + mInspector;
+                BLTManager.sharedInstance().setBTName(btname);
             }
-            //requestCameraPermission();
-            //requestPhonePermission();
-            //requestStoragePermission();
-            //runTcpConnection();
         }
         return view;
-    }
-
-    /**
-     * Start a tcp connection;
-     */
-    private void runTcpConnection() {
-        TcpConnection.getSharedInstance().startTcpConnection();
     }
 
     /**
@@ -209,7 +176,6 @@ public class HomeFragment extends BaseFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-
         if (context instanceof Listener) {
             mListener = (Listener) context;
         }
@@ -235,25 +201,33 @@ public class HomeFragment extends BaseFragment {
     @Override
     public void onResume() {
         super.onResume();
-        updateButtonStates();
+        if (BLTManager.sharedInstance().getState() != BLTManager.STATE_CONNECTED) {
+            updateButtonStates();
+        }
     }
 
     /**
      * Update the state of the buttons
      */
     private void updateButtonStates() {
-        boolean hasCurrentRecord = RecordUtil.sharedInstance().getCurrentRecord() != null;
-        boolean hasRecords = RecordUtil.sharedInstance().getCurrentRecordCount() > 0;
-
-        mContinueRecordButton.setEnabled(hasCurrentRecord);
-        mSubmitRecordButton.setEnabled(hasCurrentRecord);
-        mPreviousRecordsButton.setEnabled(hasRecords);
-//        if (TcpConnection.getSharedInstance().isConnected()) {
-//            mConnectionStatusTextView.setText(getString(R.string.connected));
-//        } else {
-//            mConnectionStatusTextView.setText(getString(R.string.not_connected));
-//        }
-
+        String inspector = SettingsUtil.sharedInstance().getInspectorId();
+        Record r = RecordUtil.sharedInstance().getCurrentRecord();
+        boolean hasCurrentRecord = r != null;
+        if (hasCurrentRecord) {
+            mNewRecordButton.setEnabled(false);
+            mContinueRecordButton.setEnabled(r.fileUploadCount == 0);
+            mPreviousRecordsButton.setEnabled(true);
+            mSubmitRecordButton.setEnabled(r.photoCount > 0);
+        } else {
+            if (inspector == "") {
+                mNewRecordButton.setEnabled(false);
+            } else {
+                mNewRecordButton.setEnabled(true);
+            }
+            mContinueRecordButton.setEnabled(false);
+            mSubmitRecordButton.setEnabled(false);
+            mPreviousRecordsButton.setEnabled(false);
+        }
         updateCurrentRecordText();
     }
 
@@ -275,7 +249,6 @@ public class HomeFragment extends BaseFragment {
                     && now.get(Calendar.YEAR) == recordCalendar.get(Calendar.YEAR);
             String prefixString = isToday ? "(Today) " :
                     isYesterday ? "(Yesterday)" : "";
-
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MMMM yyyy, h:mm a");
             mCurrentRecordName.setText("Current record: " + currentRecord.recordName);
             mCurrentRecordDate.setText("Created on: " + prefixString + simpleDateFormat.format(currentRecord.creationDate));
@@ -308,6 +281,7 @@ public class HomeFragment extends BaseFragment {
                     new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
             discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, BT_TIMEOUT);
             discoverableIntent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+            //TODO fix for Android 9 issue with discoverable intent
             startActivityForResult(discoverableIntent, REQUEST_ENABLE_DISCOVERY);
         } else {
             Log.i(TAG, "Bluetooth Not Enabled");
@@ -322,9 +296,7 @@ public class HomeFragment extends BaseFragment {
                 Log.i(TAG, "Starting listen");
             }
         }
-
     }
-
     /**
      * Captures users selection results from pop-up message window
      * @param requestCode - the type of service requested
@@ -333,7 +305,6 @@ public class HomeFragment extends BaseFragment {
      */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.i(TAG, "Request code " + requestCode);
         if (requestCode == REQUEST_ENABLE_BT) {
             if (resultCode == Activity.RESULT_OK) {
                 Log.i(TAG, "Starting BT advertisement");
@@ -344,18 +315,14 @@ public class HomeFragment extends BaseFragment {
 
             }
         } else if (requestCode == REQUEST_ENABLE_DISCOVERY) {
-            Log.i(TAG, "Result code " + resultCode);
-            if (resultCode == BT_TIMEOUT) { //user selected OK
-                Log.i(TAG, "Advertising accept");
+            //temp hack to enable bluetooth on Huawei
+            if (resultCode == BT_TIMEOUT || resultCode == 120) { //user selected OK
                 mAdvertising = true;
                 BusNotificationUtil.sharedInstance().postNotification(new BLTListeningNotification());
-                setBTName();
                 startBluetooth();
-                //startGPS();
             } else {
                 mAdvertising = false;
                 BusNotificationUtil.sharedInstance().postNotification(new BLTNotConnectedNotification());
-                setBTName();
             }
         }
     }
@@ -368,27 +335,11 @@ public class HomeFragment extends BaseFragment {
                 }
             }
         }
-
         return true;
     }
 
-    private boolean requestPhonePermission() {
-        if (getActivity().checkSelfPermission(Manifest.permission.READ_PHONE_STATE)
-                == PackageManager.PERMISSION_GRANTED) {
-            mSerialNumber = Build.getSerial();
-            Log.d(TAG, "Serial number: " + mSerialNumber);
-            return true;
-
-        } else {
-            ActivityCompat.requestPermissions(getActivity(),
-                    new String[]{Manifest.permission.READ_PHONE_STATE},
-                    READ_PHONE_STATE_REQUEST_CODE);
-            return false;
-        }
-    }
-
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         Log.d(TAG, "Request called");
         switch (requestCode) {
@@ -397,36 +348,13 @@ public class HomeFragment extends BaseFragment {
                     // All good!
                     if (getActivity().checkSelfPermission(Manifest.permission.READ_PHONE_STATE)
                             == PackageManager.PERMISSION_GRANTED) {
-                        mSerialNumber = Build.getSerial();
-                        Log.d(TAG, "Serial number: " + mSerialNumber);
                     }
                 } else {
                     Log.d(TAG, "Need phone permission");
-
                 }
                 return;
         }
     }
-
-    private String getCameraId() {
-        switch (mSerialNumber) {
-            case "ad071603301688a406":
-                return "C0";
-            case "ad07160328c52f53ed":
-                return "C1";
-            case "988627395552575855":
-                return "C2";
-            case "98862738354837315a":
-                return "C3";
-            case "ce0416048828440503":
-                return "C4";
-            case "ce12160cf826108d0c":
-                return "C5";
-            default:
-                return "";
-        }
-    }
-
     /**
      * Requests camera permissions if they are not already granted
      */
@@ -466,81 +394,25 @@ public class HomeFragment extends BaseFragment {
         if (requestStoragePermission()) {
             return;
         }
-
-        if (getActivity().checkSelfPermission(Manifest.permission.READ_PHONE_STATE)
-                == PackageManager.PERMISSION_GRANTED) {
-            mSerialNumber = Build.getSerial();
-            Log.d(TAG, "Serial number: " + mSerialNumber);
+        mInspector = SettingsUtil.sharedInstance().getInspectorId();
+        if (mInspector ==  "") {
+            showInspectorMustBeEntered();
+        } else {
+            checkForExistingRecords();
+            if(GPSUtil.sharedInstance().getLocation() == null) {
+                GPSUtil.sharedInstance().intialiseGPS();
+            }
+            String btname = "OnSite_BLT_Adapter_" + mInspector;
+            BLTManager.sharedInstance().setBTName(btname);
         }
-
-        checkForExistingRecords();
-
-//        if (TextUtils.isEmpty(SettingsUtil.sharedInstance().getCameraId())) {
-//            new AlertDialog.Builder(getActivity())
-//                .setTitle(getString(R.string.must_set_camera_id_title))
-//                .setMessage(getString(R.string.must_set_camera_id_message))
-//                .setPositiveButton(getString(R.string.open_settings_button), new DialogInterface.OnClickListener() {
-//                        @Override
-//                        public void onClick(DialogInterface dialog, int which) {
-//                            if (mListener != null) {
-//                                mListener.onOpenSettings();
-//                            }
-//                    }
-//                    })
-//                .setNegativeButton(getString(R.string.cancel), null)
-//                .show();
-//            return;
-//        }
-
-
-//        if (BatteryUtil.sharedInstance().isChargerConnected()) {
-//            checkForExistingRecords();
-//        } else {
-//            new AlertDialog.Builder(getActivity())
-//                    .setTitle(getString(R.string.charger_not_connected_title))
-//                    .setMessage(getString(R.string.charger_not_connected_message))
-//                    .setPositiveButton(getString(R.string.continue_anyway), new DialogInterface.OnClickListener() {
-//                        @Override
-//                        public void onClick(DialogInterface dialog, int which) {
-//                            checkForExistingRecords();
-//                        }
-//                    })
-//                    .setNegativeButton(getString(R.string.cancel), null)
-//                    .show();
-//        }
     }
 
     /**
      * Action when user clicks on continue button, continue recording the current record
      */
     private void onContinueButtonClicked() {
-        if (BLTManager.sharedInstance().getState() == 3) {
-            if (!BatteryUtil.sharedInstance().isChargerConnected()) {
-                //BLTManager.sharedInstance().sendMessage("B:Not Charging");
-            }
-            if (mListener != null) {
-                mListener.onNewRecord();
-            }
-        } else {
-            if (BatteryUtil.sharedInstance().isChargerConnected()) {
-                if (mListener != null) {
-                    mListener.onNewRecord();
-                }
-            } else {
-                new AlertDialog.Builder(getActivity())
-                        .setTitle(getString(R.string.charger_not_connected_title))
-                        .setMessage(getString(R.string.charger_not_connected_message))
-                        .setPositiveButton(getString(R.string.continue_anyway), new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                if (mListener != null) {
-                                    mListener.onNewRecord();
-                                }
-                            }
-                        })
-                        .setNegativeButton(getString(R.string.cancel), null)
-                        .show();
-            }
+        if (mListener != null) {
+            mListener.onNewRecord();
         }
     }
 
@@ -548,39 +420,22 @@ public class HomeFragment extends BaseFragment {
      * Action when the user clicks on the submit button
      */
     private void onSubmitButtonClicked() {
+        if (BLTManager.sharedInstance().getState() == BLTManager.STATE_CONNECTED) { //bluetooth connected disable
+            return;
+        }
         final Record currentRecord = RecordUtil.sharedInstance().getCurrentRecord();
         if (mListener != null && currentRecord != null) {
             mListener.onSubmitRecord(currentRecord.recordId);
         }
     }
-
     /**
      * Check for existing records
      */
     private void checkForExistingRecords() {
-//        if (RecordUtil.sharedInstance().checkRecordExistsForToday()) {
-//            new AlertDialog.Builder(getActivity())
-//                    .setTitle(getString(R.string.record_exists_title))
-//                    .setMessage(getString(R.string.record_exists_message))
-//                    .setPositiveButton(getString(R.string.record_exists_resume_current), new DialogInterface.OnClickListener() {
-//                        @Override
-//                        public void onClick(DialogInterface dialog, int which) {
-//                            if (mListener != null) {
-//                                mListener.onNewRecord();
-//                            }
-//                        }
-//                    })
-//                    .setNegativeButton(getString(R.string.record_exists_new_record), new DialogInterface.OnClickListener() {
-//                        @Override
-//                        public void onClick(DialogInterface dialog, int which) {
-//                            requestRecordName();
-//                        }
-//                    })
-//                    .show();
         if (RecordUtil.sharedInstance().checkRecordExistsForToday()) {
+            updateButtonStates();
             if (bluetooth) {
                 if (mListener != null) {
-                    updateButtonStates();
                     mListener.onNewRecord();
                 }
             } else {
@@ -590,15 +445,12 @@ public class HomeFragment extends BaseFragment {
             requestRecordName();
         }
     }
-
     /**
      * Requests a name for the new record from the user then creates a new record
      * with that name
      */
     private void requestRecordName() {
-
         final RelativeLayout recordNameLayout = new RelativeLayout(getActivity());
-
         final EditText recordNameInput = new EditText(getActivity());
         recordNameInput.setHint(R.string.new_record_name_hint);
         RelativeLayout.LayoutParams recordNameParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -607,98 +459,24 @@ public class HomeFragment extends BaseFragment {
         recordNameInput.setLayoutParams(recordNameParams);
         recordNameInput.setSingleLine();
         recordNameLayout.addView(recordNameInput);
-
         SimpleDateFormat dateFormat = new SimpleDateFormat(DISPLAY_DATE_FORMAT);
         final String todaysDisplayDate = dateFormat.format(new Date());
-        //SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        //final String todaysDisplayDate = dateFormat.format(new Date());
-        if (SettingsUtil.sharedInstance().getCameraId() == "") {
-
-            mCamera = getCameraId();
-            SettingsUtil.sharedInstance().setCameraId(mCamera);
-        } else {
-            mCamera = SettingsUtil.sharedInstance().getCameraId();
-        }
-        createRecord(mCamera + "_" + todaysDisplayDate);
-        //BLTManager.sharedInstance().sendPoolMessage("Record created: " + mCamera + "_"
-        //        + todaysDisplayDate);
-        setBTName();
+        createRecord(mInspector + "_" + todaysDisplayDate);
         updateButtonStates();
-        //mListener.onNewRecord();
         if (bluetooth) {
             mListener.onNewRecord();
         }
-
-//
-//        final AlertDialog d = new AlertDialog.Builder(getActivity())
-//                .setTitle(getString(R.string.new_record_dialog_title))
-//                .setMessage(String.format(getString(R.string.new_record_dialog_message), todaysDisplayDate))
-//                .setView(recordNameLayout)
-//                .setPositiveButton(getString(android.R.string.ok), null)
-//                .setNegativeButton(getString(android.R.string.cancel), null)
-//                .create();
-//
-//        recordNameInput.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-//            @Override
-//            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-//                if (!TextUtils.isEmpty(recordNameInput.getText().toString())) {
-//                    createRecord(recordNameInput.getText().toString());
-//                    d.dismiss();
-//                } else {
-//                    showNameMustBeEntered();
-//                }
-//                return true;
-//            }
-//        });
-//
-//        // Set action on button clicks,  This is so the default button click action
-//        d.setOnShowListener(new DialogInterface.OnShowListener() {
-//            @Override
-//            public void onShow(DialogInterface dialog) {
-//                Button positiveButton = d.getButton(AlertDialog.BUTTON_POSITIVE);
-//                positiveButton.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View view) {
-//                        if (!TextUtils.isEmpty(recordNameInput.getText().toString())) {
-//                            createRecord(recordNameInput.getText().toString());
-//                            d.dismiss();
-//                        } else {
-//                            showNameMustBeEntered();
-//                        }
-//                    }
-//                });
-//            }
-//        });
-//        d.show();
-//
-//        // Show the keyboard as the name dialog pops up
-//        ThreadUtil.executeOnMainThreadDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                InputMethodManager keyboard = (InputMethodManager)
-//                        getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-//                keyboard.showSoftInput(recordNameInput, 0);
-//            }
-//        }, 300);
     }
-
-    private void setBTName() {
-        //String camera = getCameraId();
-        String btname = "OnSite_BLT_Adapter_" + mCamera;
-        BLTManager.sharedInstance().setBTName(btname);
-    }
-
     /**
      * Show a dialog notifying the user that they must enter a name for the record
      */
-    private void showNameMustBeEntered() {
+    private void showInspectorMustBeEntered() {
         new AlertDialog.Builder(getActivity())
-                .setTitle(getString(R.string.new_record_please_enter_name_title))
-                .setMessage(getString(R.string.new_record_please_enter_name_message))
+                .setTitle(getString(R.string.new_record_please_enter_inpsector))
+                .setMessage(getString(R.string.new_record_please_enter_inspector_message))
                 .setPositiveButton(getString(android.R.string.ok), null)
                 .show();
     }
-
     /**
      * Creates a new record with the specified name
      *
@@ -706,9 +484,7 @@ public class HomeFragment extends BaseFragment {
      */
     private void createRecord(final String recordName) {
         if (RecordUtil.sharedInstance().createNewRecord(recordName)) {
-//            if (mListener != null) {
-//                mListener.onNewRecord();
-//            }
+            LogUtil.sharedInstance().createLog();
         } else {
             new AlertDialog.Builder(getActivity())
                     .setTitle(getString(R.string.create_record_error_title))
@@ -717,16 +493,16 @@ public class HomeFragment extends BaseFragment {
                     .show();
         }
     }
-
     /**
      * Action when a user clicks on the previous records button
      */
     private void onPreviousRecordsClicked() {
+        Toast.makeText(mContext, "Succesfull satellite fix!",
+                Toast.LENGTH_SHORT).show();
         if (mListener != null) {
             mListener.onPreviousRecords();
         }
     }
-
     /**
      * init the app version text box
      */
@@ -739,7 +515,6 @@ public class HomeFragment extends BaseFragment {
             mAppVersion.setText("");
         }
     }
-
     // **********************************************************
     //  Notifications
     // **********************************************************
@@ -751,7 +526,10 @@ public class HomeFragment extends BaseFragment {
     @Subscribe
     public void onBLTConnectedEvent(BLTConnectedNotification event) {
         // Set connection status text to connected
+        mContinueRecordButton.setEnabled(false);
+        mSubmitRecordButton.setEnabled(false);
         mConnectionStatusTextView.setText(getString(R.string.BTconnected));
+
     }
 
     /**
@@ -772,7 +550,7 @@ public class HomeFragment extends BaseFragment {
      */
     @Subscribe
     public void onBLTNotConnectedEvent(BLTNotConnectedNotification event) {
-        // Set connection status text to connected
+        updateButtonStates();
         mConnectionStatusTextView.setText(getString(R.string.BTnotConnected));
     }
 
@@ -783,15 +561,8 @@ public class HomeFragment extends BaseFragment {
      */
     @Subscribe
     public void onStartRecordingEvent(BLTStartRecordingEvent event) {
-        if (mContinueRecordButton.isEnabled()) {
             onContinueButtonClicked();
-        }
-//        } else {
-//            onNewRecordClicked();
-//        }
     }
-
-
     /**
      * Event from when user elects to pause recording
      *
@@ -802,7 +573,6 @@ public class HomeFragment extends BaseFragment {
         // Set connection status text to connected
         mConnectionStatusTextView.setText(getString(R.string.connected));
     }
-
     /**
      * Event from when user elects to resume recording
      *
@@ -813,11 +583,6 @@ public class HomeFragment extends BaseFragment {
         // Set connection status text to disconnected
         mConnectionStatusTextView.setText(getString(R.string.not_connected));
     }
-
-
-
-
-
     /**
      * instantiate and return an instance of this fragment
      *

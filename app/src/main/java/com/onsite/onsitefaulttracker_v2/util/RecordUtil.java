@@ -5,10 +5,8 @@ import android.content.SharedPreferences;
 import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
-
 import com.google.gson.Gson;
 import com.onsite.onsitefaulttracker_v2.model.Record;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,6 +21,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Created by hihi on 6/23/2016.
@@ -30,40 +29,49 @@ import java.util.UUID;
  * RecordUtil,  Utility class for handling saving and retrieving record details.
  */
 public class RecordUtil {
-
     // The tag name of this utility class
     private static final String TAG = Record.class.getSimpleName();
-
     // The folder where all records will be stored
     private static final String RECORD_STORAGE_FOLDER = "/OnSite";
-
     private final String EXTERNAL_SD_CARD =
             "./storage/0000-0000/Android/data/com.onsite.onsitefaulttracker/files";
-
     // The record preferences name
     private static final String RECORD_PREFERENCES = "record_prefs";
-
     // The current record keys
     private static final String CURRENT_RECORD_KEY = "current_record";
-
     // The format of folder names when converted from a date
     private static final String FOLDER_DATE_FORMAT = "yy_MM_dd";
-
+    private static String FOLDER_SUFFIX;
     // The static instance of this class which will be initialized once then reused
     // throughout the app
     private static RecordUtil sRecordUtil;
-
     // The number of records in storage
     private int mStoredRecordCount;
-
+    private int mDeletedPhotoCount = 0;
     // The current active record
     private Record mCurrentRecord;
-
     // Gson object which converts json strings to objects and vice versa
     private Gson mGson;
-
     // The application context
     private Context mContext;
+    private DeleteListener mDeleteListener;
+    private ExecutorService mPool;
+
+    /**
+     * Interface for communicating with the parent fragment/activity
+     */
+    public interface DeleteListener {
+        void deleted(int count);
+    }
+
+    /**
+     * Sets the dropbox client listener
+     *
+     * @param listener
+     */
+    public void setDeleteListener(final DeleteListener listener) {
+        mDeleteListener = listener;
+    }
 
     /**
      * initializes RecordUtil.
@@ -95,6 +103,7 @@ public class RecordUtil {
     private RecordUtil(final Context context) {
         mContext = context;
         mGson = new Gson();
+        FOLDER_SUFFIX = SettingsUtil.sharedInstance().getDefaultPhotoFolder();
         loadRecordDetails();
     }
 
@@ -128,7 +137,6 @@ public class RecordUtil {
         if (mCurrentRecord == null) {
             return false;
         }
-
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HHddss");
         String curDate = simpleDateFormat.format(mCurrentRecord.creationDate);
         String checkDate = simpleDateFormat.format(recordToCheck.creationDate);
@@ -165,30 +173,38 @@ public class RecordUtil {
         newRecord.recordSizeKB = 0;
         newRecord.uploadedSizeKB = 0;
         newRecord.fileUploadCount = 0;
-
         ArrayList<Record> todaysRecords = getRecordsForDate(newRecord.creationDate);
         String appendString = todaysRecords != null && todaysRecords.size() > 0 ? "_" + (todaysRecords.size() + 1) : "";
         SimpleDateFormat dateFormat = new SimpleDateFormat(FOLDER_DATE_FORMAT);
         newRecord.recordFolderName = dateFormat.format(newRecord.creationDate) + appendString;
-
         File baseFolder = getBaseFolder();
         if (baseFolder == null) {
             // TODO: Return an error
             return false;
         }
-//        File sdFolder = new File(EXTERNAL_SD_CARD);
-//        if (checkSDCard(sdFolder)) {
-//            File externalDir = mContext.getExternalFilesDir(newRecord.recordFolderName);
-//        } else {
-        File newRecordPath = new File(baseFolder.getAbsoluteFile() + "/" + newRecord.recordFolderName);
-        if (!newRecordPath.mkdir()) {
-            // TODO: Return an error
+
+        try {
+            File newRecordPath = new File(baseFolder.getAbsoluteFile() + "/" + newRecord.recordFolderName);
+            mCurrentRecord = newRecord;
+            saveCurrentRecord();
+            newRecordPath.mkdir();
+            newRecordPath = new File(baseFolder.getAbsoluteFile() + "/" + newRecord.recordFolderName + "/" + FOLDER_SUFFIX) ;
+            newRecordPath.mkdir();
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error saving snap, Record path does not exist");
             return false;
         }
-
-        mCurrentRecord = newRecord;
-        saveCurrentRecord();
         return true;
+    }
+
+    public void createNewFolder(String path) {
+        File folder = new File(path);
+        folder.mkdir();
+        if (!folder.exists()) {
+            Log.e(TAG, "Error creating folder");
+            return;
+        }
     }
 
     /**
@@ -239,8 +255,8 @@ public class RecordUtil {
                 if (record == null) {
                     continue;
                 }
-                updateRecordCurrentSize(record);
-                updateRecordCurrentImageCount(record);
+                //updateRecordCurrentSize(record);
+                //updateRecordCurrentImageCount(record);
                 resultList.add(record);
             }
         }
@@ -262,7 +278,33 @@ public class RecordUtil {
         if (record != null) {
             String recordPath = getPathForRecord(record);
             File recordFolder = !TextUtils.isEmpty(recordPath) ? new File(recordPath) : null;
-            return recordFolder != null ? recordFolder.listFiles() : null;
+            ArrayList<File> logFiles = new ArrayList<File>();
+            File[] photosToZip = new File[0];
+            if (recordFolder != null) {
+                File []files = recordFolder.listFiles();
+                for (File f:files) {
+                    if (f.isDirectory()) {
+                        File[] photosToAdd = f.listFiles();
+                        int lenA = photosToZip.length;
+                        int lenB = photosToAdd.length;
+                        File[] result = new File[lenA + lenB];
+                        System.arraycopy(photosToZip, 0, result, 0, lenA);
+                        System.arraycopy(photosToAdd, 0, result, lenA, lenB);
+                        photosToZip = result;
+                    } else {
+                        logFiles.add(f);
+                    }
+                }
+                File[] logs = logFiles.toArray(new File[0]);
+                int lenA = logs.length;
+                int lenB = photosToZip.length;
+                File[] result = new File[lenA + lenB];
+                System.arraycopy(logs, 0, result, 0, lenA);
+                System.arraycopy(photosToZip, 0, result, lenA, lenB);
+                return result;
+            } else {
+                return null;
+            }
         }
         return null;
     }
@@ -291,29 +333,32 @@ public class RecordUtil {
             mCurrentRecord = null;
             saveCurrentRecord();
         }
-
+        mPool = BitmapSaveUtil.sharedInstance().getThreadPool();
         final String path = getPathForRecord(record);
-        File file = new File(path);
-        if (file.exists()) {
-            deleteRecursive(file);
-            mStoredRecordCount--;
-
+        File folder = new File(path);
+        if (folder.exists()) {
+            deleteSafe(folder);
         }
+        BitmapSaveUtil.sharedInstance().reset();
+        mStoredRecordCount--;
     }
 
-    /**
-     * Recursively delete the files and sub folders of a specified file/directory
-     * @param fileOrDirectory
-     */
-    private void deleteRecursive(File fileOrDirectory) {
-        if (fileOrDirectory.isDirectory()) {
-            for (File child : fileOrDirectory.listFiles()) {
-                deleteRecursive(child);
+    private void deleteSafe(File baseFolder) {
+        File[] files = baseFolder.listFiles();
+        for (File f : files) {
+            if (f.isDirectory()) {
+                File[] photos = f.listFiles();
+                for (File photo : photos) {
+                    photo.delete();
+                    mDeleteListener.deleted(++mDeletedPhotoCount);
+                }
+                f.delete();
+            } else {
+                f.delete();
             }
         }
-        fileOrDirectory.delete();
+        baseFolder.delete();
     }
-
     /**
      * return all the records for a specified date
      *
@@ -322,7 +367,6 @@ public class RecordUtil {
      */
     public ArrayList<Record> getRecordsForDate(final Date date) {
         ArrayList<Record> resultList = new ArrayList<>();
-
         SimpleDateFormat dateFormat = new SimpleDateFormat(FOLDER_DATE_FORMAT);
         String folderString = dateFormat.format(date);
         File baseFolder = getBaseFolder();
@@ -339,7 +383,6 @@ public class RecordUtil {
                 }
             }
         }
-
         return resultList;
     }
 
@@ -348,6 +391,7 @@ public class RecordUtil {
      */
     public void updateRecordCurrentSize(final Record record) {
         String recordPath = getPathForRecord(record);
+        recordPath += "/Photos";
         File recordFolder = new File(recordPath);
         if (recordFolder.exists()) {
             File[] recordFiles = recordFolder.listFiles();
@@ -367,10 +411,11 @@ public class RecordUtil {
      */
     public void updateRecordCurrentImageCount(final Record record) {
         String recordPath = getPathForRecord(record);
+        recordPath += "/Photos";
         File recordFolder = new File(recordPath);
         if (recordFolder.exists()) {
             File[] recordFiles = recordFolder.listFiles();
-            record.photoCount = recordFiles != null ? recordFiles.length - 1 : 0;
+            record.photoCount = recordFiles != null ? recordFiles.length: 0;
         }
     }
 
@@ -470,16 +515,6 @@ public class RecordUtil {
         return (todaysRecords != null && todaysRecords.size() > 0);
     }
 
-//    /**
-//     * The record to return the path for
-//     *
-//     * @param record
-//     * @return
-//     */
-//    public String getPathForRecord(final Record record) {
-//        String baseFolder = getBaseFolder().getAbsolutePath();
-//        return baseFolder + "/" + record.recordFolderName;
-//    }
     /**
      * The record to return the path for
      *
@@ -521,8 +556,6 @@ public class RecordUtil {
             return false;
         }
     }
-
-
     /**
      * Updates the record count variable by counting the number of records in storage
      */
@@ -545,24 +578,6 @@ public class RecordUtil {
             }
         }
     }
-
-//    /**
-//     * Return the base folder for storing records
-//     *
-//     * @return
-//     */
-//    public File getBaseFolder() {
-//        if (Environment.getExternalStorageDirectory() == null) {
-//            return null;
-//        }
-//        File rootFolder = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + RECORD_STORAGE_FOLDER);
-//        if (!rootFolder.exists()) {
-//            if (!rootFolder.mkdir()) {
-//                return null;
-//            }
-//        }
-//        return rootFolder;
-//    }
 
     /**
      * Return the base folder for storing records

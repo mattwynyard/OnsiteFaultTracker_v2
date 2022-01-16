@@ -14,6 +14,8 @@ import com.onsite.onsitefaulttracker_v2.R;
 import com.onsite.onsitefaulttracker_v2.model.Record;
 import com.onsite.onsitefaulttracker_v2.util.CalculationUtil;
 import com.onsite.onsitefaulttracker_v2.util.RecordUtil;
+import com.onsite.onsitefaulttracker_v2.util.ThreadUtil;
+import com.squareup.otto.Subscribe;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -24,7 +26,7 @@ import java.util.Calendar;
  *
  * The List adapter which displays the previous records to the user
  */
-public class PreviousRecordsAdapter extends BaseAdapter {
+public class PreviousRecordsAdapter extends BaseAdapter implements RecordUtil.DeleteListener {
 
     // The tag name for this adapter
     private static final String TAG = PreviousRecordsAdapter.class.getSimpleName();
@@ -37,6 +39,10 @@ public class PreviousRecordsAdapter extends BaseAdapter {
 
     // A valid context context
     private Context mContext;
+
+    private int counter;
+
+    private ViewHolder holder;
 
     /**
      * The View Holder which stores each items view
@@ -94,6 +100,23 @@ public class PreviousRecordsAdapter extends BaseAdapter {
         mRecordItemListener = recordItemListener;
     }
 
+    public void setCounter(int n) {
+        counter = n;
+    }
+
+    @Override
+    public void deleted(int count) {
+        int remaining = (counter - count);
+        if (remaining < 0) {
+            remaining = 0;
+        }
+        final int finalRemaining = remaining;
+        ThreadUtil.executeOnMainThread(() -> {
+            holder.mImageCountTextView.setText(String.format("%d images", finalRemaining));
+        });
+
+    }
+
     /**
      * returns the number of items in the adapter
      *
@@ -139,8 +162,6 @@ public class PreviousRecordsAdapter extends BaseAdapter {
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
         View vi = convertView;
-        final ViewHolder holder;
-
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             vi = inflater.inflate(R.layout.record_list_item, parent, false);
@@ -165,7 +186,6 @@ public class PreviousRecordsAdapter extends BaseAdapter {
         } else {
             holder = (ViewHolder) vi.getTag();
         }
-
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MMMM yyyy, h:mm a");
         final Record item = (Record) getItem(position);
         Calendar now = Calendar.getInstance();
@@ -181,31 +201,24 @@ public class PreviousRecordsAdapter extends BaseAdapter {
         holder.mNameTextView.setText(item.recordName);
         holder.mDateTextView.setText(prefixString +
                 simpleDateFormat.format(item.creationDate));
+
         holder.mImageCountTextView.setText(String.format("%d images", item.photoCount));
-        String sizeString = CalculationUtil.sharedInstance().getDisplayValueFromKB(item.recordSizeKB) + " in storage";
+        String sizeString = CalculationUtil.sharedInstance().getDisplayValueFromKB(item.totalSizeKB) + " in storage";
         holder.mRecordSizeTextView.setText(sizeString);
         String recordingTimeString = CalculationUtil.sharedInstance().getDisplayValueFromMilliseconds(item.totalRecordTime) + " recorded";
         holder.mRecordingTimeTextView.setText(recordingTimeString);
-
-        if (item.fileUploadCount >= item.photoCount) {
+        if (item.fileUploadCount > item.photoCount) {
             // Item Finished
             holder.mProgressTextView.setText(mContext.getString(R.string.record_progress_finalized));
             holder.mProgressTextView.setTextColor(ContextCompat.getColor(mContext, R.color.finalized_red));
             holder.mUploadButton.setVisibility(View.INVISIBLE);
             holder.mRecordButton.setVisibility(View.INVISIBLE);
             holder.mDeleteButton.setVisibility(View.VISIBLE);
-        } else if (RecordUtil.sharedInstance().isRecordCurrent(item)) {
+        } else  {
             // Current Item and not finished
             holder.mProgressTextView.setText(mContext.getString(R.string.record_progress_in_progress));
             holder.mProgressTextView.setTextColor(ContextCompat.getColor(mContext, R.color.in_progress_green));
             holder.mUploadButton.setVisibility(View.INVISIBLE);
-            holder.mRecordButton.setVisibility(View.VISIBLE);
-            holder.mDeleteButton.setVisibility(View.INVISIBLE);
-        } else {
-            // Not Current, Ready to submit
-            holder.mProgressTextView.setText(mContext.getString(R.string.record_progress_ready_to_submit));
-            holder.mProgressTextView.setTextColor(ContextCompat.getColor(mContext, R.color.ready_to_submit_blue));
-            holder.mUploadButton.setVisibility(View.VISIBLE);
             holder.mRecordButton.setVisibility(View.INVISIBLE);
             holder.mDeleteButton.setVisibility(View.INVISIBLE);
         }
@@ -245,7 +258,6 @@ public class PreviousRecordsAdapter extends BaseAdapter {
 
         return vi;
     }
-
     /**
      *  Listener for communicating button clicks to the parent fragment
      */

@@ -7,12 +7,12 @@
     <string name="home_title">Onsite Fault Tracker</string>
     <string name="new_record">New Record</string>
     <string name="continue_record">Continue Record</string>
-    <string name="submit_record">Submit Record</string>
+    <string name="submit_record">Zip Record</string>
     <string name="zip_record">Zip Record</string>
-    <string name="previous_records">Previous Records</string>
+    <string name="previous_records">Current Record</string>
     <string name="app_version">App Version: %s</string>
     <string name="no_current_record">No Current Record</string>
-    <string name="not_connected">Usb connection not initialized</string>
+    <string name="not_connected">Bluetooth connection not initialized</string>
     <string name="connected">Usb connected</string>
     <string name="BTconnected">Bluetooth connected</string>
     <string name="BTconnecting">Bluetooth waiting for connection</string>
@@ -33,17 +33,19 @@
     <string name="create_record_error_message">Failed to create a record with the following error: %s</string>
     <string name="new_record_please_enter_name_title">Name required</string>
     <string name="new_record_please_enter_name_message">Please enter a name for the new record</string>
+    <string name="new_record_please_enter_inpsector">Inspector name required</string>
+    <string name="new_record_please_enter_inspector_message">Please enter the inspectors intials in settings</string>
     <string name="open_settings_button">Open Settings</string>
 
     <!-- Settings Screen -->
     <string name="settings_title">Settings</string>
-    <string name="settings_camera_id_title">Camera Id</string>
-    <string name="set_camera_id_title">Set camera Id</string>
-    <string name="set_camera_id_message">Enter the camera Id for this device</string>
-    <string name="must_set_camera_id_title">Camera Id required</string>
-    <string name="must_set_camera_id_message">A camera Id must be entered in order to create a record</string>
-    <string name="tap_camera_id">Tap to set camera Id</string>
-    <string name="camera_id_hint">Camera Id</string>
+    <string name="settings_camera_id_title">Inspector Id</string>
+    <string name="set_camera_id_title">Set Inspector Id</string>
+    <string name="set_camera_id_message">Enter the Inspector Id for this device</string>
+    <string name="must_set_camera_id_title">Inspector Id required</string>
+    <string name="must_set_camera_id_message">A Inspector Id must be entered in order to create a record</string>
+    <string name="tap_camera_id">Tap to set Inspector Id</string>
+    <string name="camera_id_hint">Inspector Id</string>
     <string name="setting_frequency_title">Picture frequency</string>
     <string name="setting_frequency_value">%.1f seconds</string>
     <string name="setting_image_size_title">Image size</string>
@@ -67,6 +69,7 @@
     <string name="not_enough_storage_title">Warning</string>
     <string name="not_enough_storage_message">There is not enough available storage space to complete the selected days work.</string>
     <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
     <string name="continue_anyway">Continue Anyway</string>
 
     <!-- Record Fragment Strings -->

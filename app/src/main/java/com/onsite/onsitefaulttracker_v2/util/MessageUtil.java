@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 public class MessageUtil {
 
     // The tag name for this utility class
-    private static final String TAG = BitmapSaveUtil.class.getSimpleName();
+    private static final String TAG = MessageUtil.class.getSimpleName();
     // A static instance of the bitmap save utilities
     private static MessageUtil sMessageUtil;
 
@@ -50,9 +50,6 @@ public class MessageUtil {
     }
 
     public void setRecording(String recording) {
-//        byte[] array = new byte[1];
-//        array[0] = (byte)(recording == true ? 1 : 0);
-//        this.recording = array;
         this.recording = recording.getBytes(StandardCharsets.US_ASCII);
     }
 

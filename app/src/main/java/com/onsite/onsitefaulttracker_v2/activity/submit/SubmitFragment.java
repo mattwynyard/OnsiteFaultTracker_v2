@@ -133,14 +133,7 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
             mCurrentImageView = (ImageView) view.findViewById(R.id.current_image_id);
             mSubmittingProgressBar = (ProgressBar) view.findViewById(R.id.submitting_progress_bar);
             mRecordSubmittedTextView = (TextView) view.findViewById(R.id.record_submitted_text_view);
-
             mRecord = RecordUtil.sharedInstance().getRecordWithId(mRecordId);
-//            mFileNames = new String[mRecordFiles.length];
-//            for (int i = 0; i < mRecordFiles.length; i++) {
-//                totalBytes += mRecordFiles[i].length();
-//                mFileNames[i] = mRecordFiles[i].getAbsolutePath();
-//            }
-
             updateUIValues();
         }
         return view;
@@ -168,19 +161,16 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
      * Update the ui with the record details
      */
     private void updateUIValues() {
-        mRecord.totalSizeKB = (totalBytes) /1024;
+        //mRecord.totalSizeKB = (totalBytes) /1024;
         mNameTextView.setText(mRecord.recordName);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MMMM yyyy, h:mm a");
         mDateTextView.setText(String.format(getString(R.string.submit_created_date), simpleDateFormat.format(mRecord.creationDate)));
         mTotalSizeTextView.setText(String.format(getString(R.string.submit_total_size), CalculationUtil.sharedInstance().getDisplayValueFromKB(mRecord.totalSizeKB)));
-        //final long remainingKB = mRecord.totalSizeKB - mRecord.uploadedSizeKB;
-        //mRemainingTextView.setText(String.format(getString(R.string.submit_remaining_size), CalculationUtil.sharedInstance().getDisplayValueFromKB(Math.max(remainingKB, 0))));
         float percentage = ((float)mRecord.uploadedSizeKB / (float)mRecord.totalSizeKB) * 100.0f;
         percentage = Math.min(100.0f, percentage);
         mPercentageTextView.setText(String.format("%.0f%%", percentage));
-
         // If the submission is already complete show that
-        if (mRecord.fileUploadCount >= mRecord.photoCount) {
+        if (mRecord.fileUploadCount > mRecord.photoCount) {
             onSubmissionComplete();
         }
     }
@@ -218,8 +208,7 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
         mRecordSubmittedTextView.setVisibility(View.VISIBLE);
         mSubmittingProgressBar.setVisibility(View.INVISIBLE);
         mSubmitButton.setVisibility(View.INVISIBLE);
-
-        mRecord.fileUploadCount = mRecord.photoCount;
+        //mRecord.fileUploadCount = mRecord.photoCount;
         RecordUtil.sharedInstance().saveRecord(mRecord);
     }
 
@@ -229,10 +218,10 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
      */
     private void onSubmitClicked() {
         mSubmitting = true;
-
-        // TODO: REMOVE DROP BOX CLIENT REFERENCES
         mRecordFiles = RecordUtil.sharedInstance().getRecordFiles(mRecord.recordId);
-
+        if (mRecordFiles == null) {
+            return;
+        }
         final String fileNames[] = new String[mRecordFiles.length];
         for (int i = 0; i < mRecordFiles.length; i++) {
             totalBytes += mRecordFiles[i].length();
@@ -241,26 +230,16 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
         updateUIValues();
         SimpleDateFormat dateFormat = new SimpleDateFormat(OUT_RECORD_DATE_FORMAT);
         final String dateString = dateFormat.format(mRecord.creationDate);
-        String outPath;
-        if (RecordUtil.sharedInstance().checkSDCard()) {
-            outPath = RecordUtil.sharedInstance().getBaseFolder(true)
-                    .getAbsolutePath() + "/onsite_record_" + dateString + ".zip";
-        } else {
-            outPath = RecordUtil.sharedInstance().getBaseFolder()
-                    .getAbsolutePath() + "/onsite_record_" + dateString + ".zip";
-        }
+        String outPath = RecordUtil.sharedInstance().getBaseFolder()
+                .getAbsolutePath() + "/onsite_record_" + dateString + ".zip";
         final Compressor compressor = new Compressor(fileNames, outPath);
         compressor.setCompressorListener(this);
-
         mSubmittingProgressBar.setVisibility(View.VISIBLE);
         mSubmitButton.setEnabled(false);
         ThreadUtil.executeOnNewThread(new Runnable() {
             @Override
             public void run() {
-                Log.i(TAG, "START ZIP");
-                //Compressor compressor = new Compressor(fileNames, outPath);
                 compressor.zip();
-                Log.i(TAG, "END ZIP");
                 ThreadUtil.executeOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -279,7 +258,6 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
                     ThreadUtil.executeOnMainThread(new Runnable() {
                         @Override
                         public void run() {
-
                             long remainingKB = (totalBytes / 1024)
                                     - (totalBytesCompressed / 1024);
                             mRemainingTextView.setText(String.format(getString(R.string.submit_remaining_size),
@@ -305,18 +283,6 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
             }
         });
     }
-
-//    /**
-//     * Intialises a new Compressor object at set files to compress and path to save zip file to
-//     *
-//     * @param files - array of files to compress
-//     * @param path - file path to save zipped file to
-//     * @return - new Compressor object
-//     */
-//    public Compressor compress(File[] files, String path) {
-//        Compressor c = new Compressor(files, path);
-//        return c;
-//    }
 
     /**
      * Override and handle on back action return true if consumed the event
@@ -365,8 +331,14 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
     public void dataRead(long buffer) {
         //Log.i(TAG, "Buffer: " + buffer);
             totalBytesCompressed += buffer;
-            Log.i("Bytes: ", String.valueOf(totalBytes));
-            Log.i("Compressed Bytes: ", String.valueOf(totalBytesCompressed));
+            //Log.i("Bytes: ", String.valueOf(totalBytes));
+            //Log.i("Compressed Bytes: ", String.valueOf(totalBytesCompressed));
+    }
+
+    @Override
+    public void zipCount(int count) {
+        Log.i("count: ", String.valueOf(count));
+        mRecord.fileUploadCount = count;
     }
 
     /**

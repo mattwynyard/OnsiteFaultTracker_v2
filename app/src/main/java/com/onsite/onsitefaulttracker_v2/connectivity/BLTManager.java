@@ -2,36 +2,35 @@ package com.onsite.onsitefaulttracker_v2.connectivity;
 
 import android.app.Application;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.onsite.onsitefaulttracker_v2.model.notifcation_events.BLTStartRecordingEvent;
 import com.onsite.onsitefaulttracker_v2.model.notifcation_events.BLTStopRecordingEvent;
 import com.onsite.onsitefaulttracker_v2.util.BatteryUtil;
 import com.onsite.onsitefaulttracker_v2.util.BitmapSaveUtil;
 import com.onsite.onsitefaulttracker_v2.util.BusNotificationUtil;
+import com.onsite.onsitefaulttracker_v2.util.LogUtil;
 import com.onsite.onsitefaulttracker_v2.util.MessageUtil;
 import com.onsite.onsitefaulttracker_v2.util.ThreadUtil;
-
-//import com.onsite.onsitefaulttracker.model.notifcation_events.BLTStartRecordingEvent;
-//import com.onsite.onsitefaulttracker.model.notifcation_events.BLTStopRecordingEvent;
 import com.onsite.onsitefaulttracker_v2.model.notifcation_events.BLTConnectedNotification;
 import com.onsite.onsitefaulttracker_v2.model.notifcation_events.BLTNotConnectedNotification;
-
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Calendar;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class BLTManager {
@@ -43,7 +42,6 @@ public class BLTManager {
     // Application context
     private Application mApplicationContext;
     private BluetoothAdapter mBluetoothAdapter;
-
     private static final UUID UUID_UNSECURE = UUID.fromString("00030000-0000-1000-8000-00805F9B34FB");
     private static final String NAME = "OnsiteBluetoothserver";
 
@@ -61,13 +59,10 @@ public class BLTManager {
     public static final int STATE_CONNECTED = 3;  // now connected to a remote device
     public static final int STATE_TIMEOUT = 4;  // now connected to a remote device
     public static final int STATE_NOTENABLED = 9;  // bluetooth not enabled on phone
-
+    public static long timeDelta;
     private ExecutorService mThreadPool;
-    ReentrantLock lock = new ReentrantLock();
-
+    private ReentrantLock lock = new ReentrantLock();
     private int mState;    /**
-
-
 
      * initialize the BLTManager class,  to be called once from the application class
      *
@@ -99,9 +94,6 @@ public class BLTManager {
         mApplicationContext = applicationContext;
         setupBluetooth();
         Log.i(TAG, "Bluetooth Setup");
-
-        com.onsite.onsitefaulttracker.util.ThreadFactoryUtil factory = new com.onsite.onsitefaulttracker.util.ThreadFactoryUtil("message");
-
         mThreadPool = BitmapSaveUtil.sharedInstance().getThreadPool();
     }
 
@@ -137,8 +129,6 @@ public class BLTManager {
             setState(STATE_CONNECTING);
         }
     }
-
-
     /**
      * Checks if bluetooth on the adapter is enabled.
      * @return true/false if blue is enabled.
@@ -150,6 +140,44 @@ public class BLTManager {
     public void setupBluetooth() {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         mState = STATE_NONE;
+    }
+
+    public void startDiscovery() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        mApplicationContext.registerReceiver(mReceiver, filter);
+        if (mBluetoothAdapter.isDiscovering()) {
+            // Bluetooth is already in discovery mode, we cancel to restart it again
+            mBluetoothAdapter.cancelDiscovery();
+        }
+        mBluetoothAdapter.startDiscovery();
+    }
+
+    /**
+     * Receives events when a bluetooth device has been discovered: DEPRECIATED
+     */
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            // When discovery finds a device
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                Log.i(TAG, "Device name: " + device.getName());
+                Log.i(TAG, "Device address: " + device.getAddress());
+            }
+            if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
+                Log.i(TAG, "onResume: Discovery Started");
+            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+                Log.i(TAG, "onResume: Discovery Finished");
+            }
+        }
+    };
+
+    public long getTimeDelta() {
+        return timeDelta;
     }
 
     /**
@@ -167,49 +195,13 @@ public class BLTManager {
     public void setState(int state) {
         Log.d(TAG, "setState() " + mState + " -> " + state);
         mState = state;
-
     }
 
     public void setBTName(String id) {
-        Log.d(TAG, "Phone Id: " + id);
-        //BLUETOOTH_ADAPTER_NAME = id;
+        Toast.makeText(mApplicationContext, "setting bluetooth name: " + id,
+                Toast.LENGTH_LONG).show();
         mBluetoothAdapter.setName(id);
     }
-
-//    public void sendMessage(final String message) {
-//
-//        //ThreadUtil.executeOnNewThread(new Runnable() {
-//        Runnable task = new Runnable() {
-//            @Override
-//            public void run() {
-//                if (mWriterOut != null) {
-//                    //Log.i(TAG, "ThreadCount: " + Thread.activeCount());
-//                    String newMessage = "Z:" + message;
-//                    byte[] ascii = newMessage.getBytes(StandardCharsets.US_ASCII);
-//                    byte [] messageLength = ByteBuffer.allocate(4).putInt(ascii.length).array();
-//                    ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-//
-//                    try {
-//                        byteOut.write(messageLength);
-//                        byteOut.write(ascii);
-//                        lock.lock();
-//                        try {
-//                            byteOut.writeTo(mSocket.getOutputStream());
-//
-//                            mSocket.getOutputStream().flush();
-//                            //byteOut.reset();
-//                            byteOut.close();
-//                        } finally {
-//                            lock.unlock();
-//                        }
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            }
-//        };
-//        mThreadPool.execute(task);
-//    }
 
     public void sendMessge(final ByteArrayOutputStream bytes) {
         try {
@@ -217,97 +209,73 @@ public class BLTManager {
             mSocket.getOutputStream().flush();
         } catch (IOException e) {
             e.printStackTrace();
+            Log.e(TAG, e.getMessage());
         }
     }
 
     public void sendMessge(final String message) {
 
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        //byte[] messageBytes = message.getBytes(StandardCharsets.US_ASCII);
         float currentBatteryLevel = BatteryUtil.sharedInstance().getBatteryLevel();
         int batteryLevel = Math.round(currentBatteryLevel);
-
         MessageUtil.sharedInstance().setRecording("N");
         MessageUtil.sharedInstance().setBattery(batteryLevel);
         MessageUtil.sharedInstance().setError(0);
         MessageUtil.sharedInstance().setMessage(message);
         MessageUtil.sharedInstance().setPhoto(null);
         int messageLength = MessageUtil.sharedInstance().getMessageLength();
-        //int photoLength = 0;
         int payload = messageLength + 21;
         MessageUtil.sharedInstance().setPayload(payload);
         bytes = MessageUtil.sharedInstance().getMessage();
-
-
-
-
         try {
-            //bytes.write(messageBytes);
             bytes.writeTo(mSocket.getOutputStream());
             mSocket.getOutputStream().flush();
 
         } catch (IOException e) {
             e.printStackTrace();
+            Log.e(TAG, e.getMessage());
         }
-
     }
 
-
-        public void sendPhoto(final String header, final ByteArrayOutputStream photoBytes) {
-            //Runnable task = new Runnable() {
-        //ThreadUtil.executeOnNewThread(new Runnable() {
-            //@Override
-            //public void run() {
+    public void sendPhoto(final String header, final ByteArrayOutputStream photoBytes) {
+        try {
+            ByteArrayOutputStream headerOut = new ByteArrayOutputStream();
+            byte[] ascii = header.getBytes(StandardCharsets.US_ASCII);
+            byte[] prefix;
+            if (photoBytes == null) {
+                String start = "Z:";
+                prefix = start.getBytes(StandardCharsets.US_ASCII);
+                headerOut.write(prefix);
+                headerOut.write(ascii);
+                Log.i(TAG, "Bytes Sent: " + (prefix.length + ascii.length));
+                headerOut.writeTo(mSocket.getOutputStream());
+            } else {
+                byte [] messageLength = ByteBuffer.allocate(4).putInt(ascii.length).array();
+                byte [] photoLength = ByteBuffer.allocate(4).putInt(photoBytes.size()).array();
+                String start = "P:";
+                prefix = start.getBytes(StandardCharsets.US_ASCII);
+                byte[] photo = photoBytes.toByteArray();
+                headerOut.write(prefix); //ascii 2bytes
+                headerOut.write(messageLength); //int
+                headerOut.write(ascii); //ascii
+                headerOut.write(photoLength); //int
+                headerOut.write(photo);
+                lock.lock();
                 try {
-
-                    ByteArrayOutputStream headerOut = new ByteArrayOutputStream();
-                    byte[] ascii = header.getBytes(StandardCharsets.US_ASCII);
-                    byte[] prefix;
-                    if (photoBytes == null) {
-                        String start = "Z:";
-                        prefix = start.getBytes(StandardCharsets.US_ASCII);
-                        headerOut.write(prefix);
-                        headerOut.write(ascii);
-                        //headerOut.write(0x0a);
-                        Log.i(TAG, "Bytes Sent: " + (prefix.length + ascii.length));
-                        headerOut.writeTo(mSocket.getOutputStream());
-                    } else {
-                        byte [] messageLength = ByteBuffer.allocate(4).putInt(ascii.length).array();
-                        byte [] photoLength = ByteBuffer.allocate(4).putInt(photoBytes.size()).array();
-                        String start = "P:";
-                        prefix = start.getBytes(StandardCharsets.US_ASCII);
-                        byte[] photo = photoBytes.toByteArray();
-
-                        headerOut.write(prefix); //ascii 2bytes
-                        //Log.d(TAG, "Size: " + headerOut.size());
-                        headerOut.write(messageLength); //int
-                        //Log.d(TAG, "Size: " + headerOut.size());
-                        headerOut.write(ascii); //ascii
-                        //Log.d(TAG, "Size: " + headerOut.size());
-                        headerOut.write(photoLength); //int
-                        //Log.d(TAG, "Size: " + headerOut.size());
-                        headerOut.write(photo);
-
-                        lock.lock();
-                        try {
-                            headerOut.writeTo(mSocket.getOutputStream());
-                            Log.i(TAG, "Bytes Sent: " + (prefix.length + messageLength.length +
-                                    ascii.length + photoLength.length + photo.length));
-
-                            mSocket.getOutputStream().flush();
-                            headerOut.close();
-                            photoBytes.close();
-                        } finally {
-                            lock.unlock();
-                        }
-
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    headerOut.writeTo(mSocket.getOutputStream());
+                    Log.i(TAG, "Bytes Sent: " + (prefix.length + messageLength.length +
+                            ascii.length + photoLength.length + photo.length));
+                    mSocket.getOutputStream().flush();
+                    headerOut.close();
+                    photoBytes.close();
+                } finally {
+                    lock.unlock();
                 }
-            //}
-        //});
-        //mThreadPool.execute(task);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e(TAG, e.getMessage());
+        }
     }
 
     /**
@@ -318,13 +286,10 @@ public class BLTManager {
     private class AcceptThread extends Thread {
         private final BluetoothServerSocket mmServerSocket;
         private String mSocketType;
-
         private AcceptThread(boolean secure) {
             // Use a temporary object that is later assigned to mmServerSocket
             // because mmServerSocket is final.
             BluetoothServerSocket tmp = null;
-
-
             mSocketType = secure ? "Secure" : "Insecure";
             // Create a new listening server socket
             Log.i(TAG, "NAME: " + NAME);
@@ -340,6 +305,7 @@ public class BLTManager {
                 }
             } catch (IOException e) {
                 Log.e(TAG, "Socket Type: " + mSocketType + "listen() failed", e);
+                LogUtil.sharedInstance().appendLog("Socket Type: " + mSocketType + "listen() failed");
             }
             mmServerSocket = tmp;
         }
@@ -348,13 +314,13 @@ public class BLTManager {
             Log.d(TAG, "Socket Type: " + mSocketType +
                     " BEGIN mAcceptThread" + this);
             setName("AcceptThread" + mSocketType);
-            //BusNotificationUtil.sharedInstance().postNotification(new BLTListeningNotification());
             // Keep listening until exception occurs or a socket is returned.
             while (mState != STATE_CONNECTED) {
                 try {
                     Log.i(TAG,  "Server socket listening");
-                    mSocket = mmServerSocket.accept();
                     setState(STATE_LISTEN);
+                    mSocket = mmServerSocket.accept();
+
                 } catch (IOException e) {
                     Log.e(TAG, "Socket's accept() method failed", e);
                     break;
@@ -364,11 +330,10 @@ public class BLTManager {
                     // the connection in a separate thread.
                     Log.i(TAG, "Bluetooth socket accepted connection");
                     Log.i(TAG, "Connected to: " + mSocket.getRemoteDevice().getAddress());
-                    setState(STATE_CONNECTED);
+
                     BusNotificationUtil.sharedInstance().postNotification(new BLTConnectedNotification());
                     try {
                         mWriterOut = new PrintWriter(mSocket.getOutputStream(), true);
-
                         sendMessge("CONNECTED,");
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -377,6 +342,7 @@ public class BLTManager {
                     mReadThread.setName("ReadThread");
                     mReadThread.setPriority(MAX_PRIORITY);
                     mReadThread.start();
+                    setState(STATE_CONNECTED);
                 }
             }
         }
@@ -397,7 +363,6 @@ public class BLTManager {
          */
         private void closeAll() {
             try {
-                //BusNotificationUtil.sharedInstance().postNotification(new BLTStopRecordingEvent());
                 Log.e(TAG, "Closing All");
                 BusNotificationUtil.sharedInstance().postNotification(new BLTNotConnectedNotification());
                 in.close();
@@ -410,6 +375,7 @@ public class BLTManager {
                 restartBLTConnection();
             } catch (IOException e) {
                 e.printStackTrace();
+                Log.e(TAG, e.getMessage());
             }
         }
         /**
@@ -443,13 +409,29 @@ public class BLTManager {
                         } else if (line.contains("Stop")) {
                                 BusNotificationUtil.sharedInstance()
                                         .postNotification(new BLTStopRecordingEvent());
+                        } else if (line.contains("Time")) {
+                            String[] time = line.split(":");
+                            int year = Integer.valueOf(time[1]);
+                            int month = Integer.valueOf(time[2]);
+                            int day = Integer.valueOf(time[3]);
+                            int hour = Integer.valueOf(time[4]);
+                            int minute = Integer.valueOf(time[5]);
+                            int second = Integer.valueOf(time[6]);
+                            int millisecond = Integer.valueOf(time[7].substring(0, 3));
+                            Calendar sysTime = Calendar.getInstance();
+                            sysTime.set(year, month - 1, day, hour, minute, second); //0 = Jan
+                            long sysTimeMilli = sysTime.getTimeInMillis() + millisecond;
+                            long andTime = Calendar.getInstance().getTimeInMillis();
 
+                            timeDelta = andTime - sysTimeMilli;
+                            Log.d(TAG, "timeDelta: " + timeDelta);
                         } else {
-                            //System.out.println(line);
+
                         }
                     }
                 } catch (IOException e) { //connection was lost
                     e.printStackTrace();
+                    Log.e(TAG, e.getMessage());
                 } finally {
                     BusNotificationUtil.sharedInstance()
                             .postNotification(new BLTStopRecordingEvent());

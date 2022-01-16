@@ -2,12 +2,17 @@ package com.onsite.onsitefaulttracker_v2.activity.home;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.onsite.onsitefaulttracker_v2.activity.BaseActivity;
 import com.onsite.onsitefaulttracker_v2.activity.BaseFragment;
 import com.onsite.onsitefaulttracker_v2.activity.previous.PreviousRecordsActivity;
 import com.onsite.onsitefaulttracker_v2.activity.record.RecordActivity;
 import com.onsite.onsitefaulttracker_v2.activity.submit.SubmitActivity;
+import com.onsite.onsitefaulttracker_v2.connectivity.BLTManager;
+import com.onsite.onsitefaulttracker_v2.util.LogUtil;
+
+import java.io.File;
 
 /**
  * The Home Activity is the activity for the Home screen is where the user
@@ -56,6 +61,7 @@ public class HomeActivity extends BaseActivity implements HomeFragment.Listener 
         Intent recordIntent = new Intent();
         recordIntent.setClass(this, RecordActivity.class);
         startActivity(recordIntent);
+
     }
 
     /**

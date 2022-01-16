@@ -21,6 +21,7 @@ public class Compressor {
      */
     public interface CompressorListener {
         void dataRead(long _bytes);
+        void zipCount (int count);
     }
 
     /**
@@ -39,17 +40,15 @@ public class Compressor {
 
     public void zip() {
         long _size;
-        //long totalBytes = 0;
+        int zipped = 0;
         try  {
             BufferedInputStream origin = null;
             FileOutputStream dest = new FileOutputStream(_zipFile);
             ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(dest));
             byte data[] = new byte[BUFFER];
 
-            for(int i=0; i < _files.length; i++) {
-                Log.v("Compress", "Adding: " + _files[i]);
+            for(int i = 0; i < _files.length; i++) {
                 _size = new File(_files[i]).length();
-                //totalBytes += _size;
                 FileInputStream fi = new FileInputStream(_files[i]);
                 mCompressorListener.dataRead(_size);
                 origin = new BufferedInputStream(fi, BUFFER);
@@ -59,9 +58,9 @@ public class Compressor {
                 while ((count = origin.read(data, 0, BUFFER)) != -1) {
                     out.write(data, 0, count);
                 }
+                mCompressorListener.zipCount(++zipped);
                 origin.close();
             }
-            //Log.d("Compress", "Bytes: " + totalBytes + "B");
             out.close();
         } catch(Exception e) {
             e.printStackTrace();
