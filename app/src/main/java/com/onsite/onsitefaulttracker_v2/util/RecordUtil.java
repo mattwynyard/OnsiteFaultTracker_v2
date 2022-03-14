@@ -55,7 +55,6 @@ public class RecordUtil {
     // The application context
     private Context mContext;
     private DeleteListener mDeleteListener;
-    private ExecutorService mPool;
 
     /**
      * Interface for communicating with the parent fragment/activity
@@ -330,15 +329,16 @@ public class RecordUtil {
      */
     public void deleteRecord(final Record record) {
         if (isRecordCurrent(record)) {
-            mCurrentRecord = null;
+
             saveCurrentRecord();
         }
-        mPool = BitmapSaveUtil.sharedInstance().getThreadPool();
+        //mPool = BitmapSaveUtil.sharedInstance().getThreadPool();
         final String path = getPathForRecord(record);
         File folder = new File(path);
         if (folder.exists()) {
             deleteSafe(folder);
         }
+        mCurrentRecord = null;
         BitmapSaveUtil.sharedInstance().reset();
         mStoredRecordCount--;
     }
@@ -497,7 +497,6 @@ public class RecordUtil {
                     editor.putString(CURRENT_RECORD_KEY, recordJson);
                 }
                 editor.apply();
-
                 if (mCurrentRecord != null) {
                     saveRecord(mCurrentRecord);
                 }

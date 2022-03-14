@@ -21,6 +21,7 @@ import com.onsite.onsitefaulttracker_v2.model.Record;
 import com.onsite.onsitefaulttracker_v2.util.CalculationUtil;
 import com.onsite.onsitefaulttracker_v2.util.Compressor;
 import com.onsite.onsitefaulttracker_v2.util.RecordUtil;
+import com.onsite.onsitefaulttracker_v2.util.SettingsUtil;
 import com.onsite.onsitefaulttracker_v2.util.ThreadUtil;
 
 import java.io.File;
@@ -231,7 +232,7 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
         SimpleDateFormat dateFormat = new SimpleDateFormat(OUT_RECORD_DATE_FORMAT);
         final String dateString = dateFormat.format(mRecord.creationDate);
         String outPath = RecordUtil.sharedInstance().getBaseFolder()
-                .getAbsolutePath() + "/onsite_record_" + dateString + ".zip";
+                .getAbsolutePath() + "/" + SettingsUtil.sharedInstance().getInspectorId() + "_" + dateString + ".zip";
         final Compressor compressor = new Compressor(fileNames, outPath);
         compressor.setCompressorListener(this);
         mSubmittingProgressBar.setVisibility(View.VISIBLE);

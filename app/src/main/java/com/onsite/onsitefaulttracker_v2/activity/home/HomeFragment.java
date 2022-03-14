@@ -497,8 +497,8 @@ public class HomeFragment extends BaseFragment {
      * Action when a user clicks on the previous records button
      */
     private void onPreviousRecordsClicked() {
-        Toast.makeText(mContext, "Succesfull satellite fix!",
-                Toast.LENGTH_SHORT).show();
+//        Toast.makeText(mContext, "Succesfull satellite fix!",
+//                Toast.LENGTH_SHORT).show();
         if (mListener != null) {
             mListener.onPreviousRecords();
         }
