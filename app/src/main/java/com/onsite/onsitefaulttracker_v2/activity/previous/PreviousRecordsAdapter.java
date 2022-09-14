@@ -1,5 +1,6 @@
 package com.onsite.onsitefaulttracker_v2.activity.previous;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.support.design.widget.FloatingActionButton;
@@ -159,6 +160,7 @@ public class PreviousRecordsAdapter extends BaseAdapter implements RecordUtil.De
      * @param parent
      * @return
      */
+    @SuppressLint("RestrictedApi")
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
         View vi = convertView;

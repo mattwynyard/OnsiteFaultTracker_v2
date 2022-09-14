@@ -125,6 +125,13 @@ public class RecordUtil {
         }
     }
 
+    public void clearSharedPreferences() {
+        SharedPreferences recordPreferences = mContext.getSharedPreferences(RECORD_PREFERENCES, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = recordPreferences.edit();
+        editor.clear().commit();
+        mCurrentRecord = null;
+    }
+
     /**
      * Returns true if the specified record is the current record
      *
@@ -172,6 +179,7 @@ public class RecordUtil {
         newRecord.recordSizeKB = 0;
         newRecord.uploadedSizeKB = 0;
         newRecord.fileUploadCount = 0;
+        newRecord.zipped = false;
         ArrayList<Record> todaysRecords = getRecordsForDate(newRecord.creationDate);
         String appendString = todaysRecords != null && todaysRecords.size() > 0 ? "_" + (todaysRecords.size() + 1) : "";
         SimpleDateFormat dateFormat = new SimpleDateFormat(FOLDER_DATE_FORMAT);
@@ -254,8 +262,6 @@ public class RecordUtil {
                 if (record == null) {
                     continue;
                 }
-                //updateRecordCurrentSize(record);
-                //updateRecordCurrentImageCount(record);
                 resultList.add(record);
             }
         }
@@ -332,7 +338,6 @@ public class RecordUtil {
 
             saveCurrentRecord();
         }
-        //mPool = BitmapSaveUtil.sharedInstance().getThreadPool();
         final String path = getPathForRecord(record);
         File folder = new File(path);
         if (folder.exists()) {

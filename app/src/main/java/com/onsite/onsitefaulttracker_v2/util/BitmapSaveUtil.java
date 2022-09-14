@@ -34,7 +34,7 @@ public class BitmapSaveUtil {
     // The low disk space threshold
     private static final long LOW_DISK_SPACE_THRESHOLD = 204800L; //204.8 MB
     private static final double THUMBNAIL_REDUCTION = 0.25;
-    private static final int FOLDER_SIZE = 5000;
+    private static final int FOLDER_SIZE = 100;
     private String mFolder;
     //private int totalBitMapCount = 0;
     private long totalPhotokB = 0;
