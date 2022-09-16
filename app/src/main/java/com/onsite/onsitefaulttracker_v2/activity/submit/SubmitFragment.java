@@ -209,7 +209,6 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
         mRecordSubmittedTextView.setVisibility(View.VISIBLE);
         mSubmittingProgressBar.setVisibility(View.INVISIBLE);
         mSubmitButton.setVisibility(View.INVISIBLE);
-        //mRecord.fileUploadCount = mRecord.photoCount;
         RecordUtil.sharedInstance().saveRecord(mRecord);
     }
 

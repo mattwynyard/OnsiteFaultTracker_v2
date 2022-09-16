@@ -10,7 +10,9 @@ import com.onsite.onsitefaulttracker_v2.model.Record;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -55,6 +57,7 @@ public class RecordUtil {
     // The application context
     private Context mContext;
     private DeleteListener mDeleteListener;
+    private boolean isDeleting;
 
     /**
      * Interface for communicating with the parent fragment/activity
@@ -102,6 +105,7 @@ public class RecordUtil {
     private RecordUtil(final Context context) {
         mContext = context;
         mGson = new Gson();
+        isDeleting = false;
         FOLDER_SUFFIX = SettingsUtil.sharedInstance().getDefaultPhotoFolder();
         loadRecordDetails();
     }
@@ -130,6 +134,10 @@ public class RecordUtil {
         SharedPreferences.Editor editor = recordPreferences.edit();
         editor.clear().commit();
         mCurrentRecord = null;
+    }
+
+    public boolean isDeleting() {
+        return isDeleting;
     }
 
     /**
@@ -192,11 +200,11 @@ public class RecordUtil {
 
         try {
             File newRecordPath = new File(baseFolder.getAbsoluteFile() + "/" + newRecord.recordFolderName);
-            mCurrentRecord = newRecord;
-            saveCurrentRecord();
+            setCurrentRecord(newRecord);
             newRecordPath.mkdir();
             newRecordPath = new File(baseFolder.getAbsoluteFile() + "/" + newRecord.recordFolderName + "/" + FOLDER_SUFFIX) ;
             newRecordPath.mkdir();
+            saveCurrentRecord();
 
         } catch (Exception e) {
             Log.e(TAG, "Error saving snap, Record path does not exist");
@@ -252,6 +260,7 @@ public class RecordUtil {
 
         File baseFolder = getBaseFolder();
         if (baseFolder != null) {
+            FilenameFilter filenameFilter = (file, s) -> !file.isDirectory();
             String[] allRecords = baseFolder.list();
             if (allRecords == null || allRecords.length == 0) {
                 return resultList;
@@ -333,19 +342,19 @@ public class RecordUtil {
      *
      * @param record
      */
-    public void deleteRecord(final Record record) {
-        if (isRecordCurrent(record)) {
-
-            saveCurrentRecord();
-        }
+    public void deleteRecord(final Record record) throws FileNotFoundException {
         final String path = getPathForRecord(record);
         File folder = new File(path);
         if (folder.exists()) {
-            deleteSafe(folder);
+            isDeleting = true;
+            deleteFolder(folder);
         }
+        RecordUtil.sharedInstance().clearSharedPreferences();
         mCurrentRecord = null;
         BitmapSaveUtil.sharedInstance().reset();
         mStoredRecordCount--;
+        isDeleting = false;
+
     }
 
     private void deleteSafe(File baseFolder) {
@@ -363,6 +372,19 @@ public class RecordUtil {
             }
         }
         baseFolder.delete();
+
+    }
+
+    private void deleteFolder(File baseFolder) throws FileNotFoundException {
+        if (baseFolder.isDirectory()) {
+            for (File c : baseFolder.listFiles())
+                deleteFolder(c);
+        }
+        if (baseFolder.delete()) {
+            mDeleteListener.deleted(++mDeletedPhotoCount);
+        } else {
+            throw new FileNotFoundException("Failed to delete file: " + baseFolder);
+        }
     }
     /**
      * return all the records for a specified date
@@ -376,7 +398,9 @@ public class RecordUtil {
         String folderString = dateFormat.format(date);
         File baseFolder = getBaseFolder();
         if (baseFolder != null) {
-            String[] allRecords = baseFolder.list();
+            FilenameFilter filenameFilter = (file, s) -> !file.isDirectory();
+            String[] allRecords = baseFolder.list(filenameFilter);
+
             if (allRecords == null || allRecords.length == 0) {
                 return resultList;
             }
@@ -517,6 +541,10 @@ public class RecordUtil {
     public boolean checkRecordExistsForToday() {
         ArrayList<Record> todaysRecords = getRecordsForDate(new Date());
         return (todaysRecords != null && todaysRecords.size() > 0);
+    }
+
+    public ArrayList<Record> getRecordsForToday() {
+        return getRecordsForDate(new Date());
     }
 
     /**

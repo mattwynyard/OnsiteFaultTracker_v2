@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -37,9 +38,10 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
 
     // List View which will display the previously created records
     private ListView mPreviousRecordsList;
-
+    private ProgressBar mSubmittingProgressBar;
     // The adapter for previous records list
     private PreviousRecordsAdapter mPreviousRecordsAdapter;
+
 
     // List of records which are in storage
     private ArrayList<Record> mRecords;
@@ -62,6 +64,7 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
         View view = super.onCreateView(inflater, container, savedInstanceState);
         if (view != null) {
             mPreviousRecordsList = (ListView)view.findViewById(R.id.previous_records_list);
+            mSubmittingProgressBar = (ProgressBar) view.findViewById(R.id.submitting_progress_bar);
         }
         return view;
     }
@@ -112,7 +115,10 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
                 mPreviousRecordsList.setAdapter(mPreviousRecordsAdapter);
             }
         });
+    }
 
+    private void onDeleteComplete() {
+        mSubmittingProgressBar.setVisibility(View.INVISIBLE);
     }
 
     /**
@@ -123,14 +129,18 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
     private void deleteRecord(final Record record) {
         RecordUtil.sharedInstance().setDeleteListener(mPreviousRecordsAdapter);
         mPreviousRecordsAdapter.setCounter(record.photoCount);
+
         ThreadUtil.executeOnNewThread(new Runnable() {
             @Override
             public void run() {
                 try {
                     RecordUtil.sharedInstance().deleteRecord(record);
+
+
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
+//                mSubmittingProgressBar.setVisibility(View.VISIBLE);
                 populatePreviousRecordsList();
             }
         });

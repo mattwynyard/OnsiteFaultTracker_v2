@@ -194,6 +194,7 @@ public class HomeFragment extends BaseFragment {
         super.onDetach();
         mListener = null;
         BusNotificationUtil.sharedInstance().getBus().unregister(this);
+        updateButtonStates();
     }
 
     /**
@@ -238,11 +239,10 @@ public class HomeFragment extends BaseFragment {
      */
     private void updateCurrentRecordText() {
         Record currentRecord = RecordUtil.sharedInstance().getCurrentRecord();
-        ArrayList<Record>  mRecords = RecordUtil.sharedInstance().getAllSavedRecords();
-        if (currentRecord != null && mRecords.isEmpty()) {
-            RecordUtil.sharedInstance().clearSharedPreferences();
-
-        }
+//        ArrayList<Record>  mRecords = RecordUtil.sharedInstance().getAllSavedRecords();
+//        if (currentRecord != null && mRecords.isEmpty()) {
+//            RecordUtil.sharedInstance().clearSharedPreferences();
+//        }
         if (currentRecord == null) {
             mCurrentRecordName.setText(getString(R.string.no_current_record));
             mCurrentRecordDate.setText("");

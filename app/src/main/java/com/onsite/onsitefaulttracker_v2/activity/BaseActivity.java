@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import com.onsite.onsitefaulttracker_v2.R;
 import com.onsite.onsitefaulttracker_v2.activity.settings.SettingsActivity;
+import com.onsite.onsitefaulttracker_v2.util.RecordUtil;
 
 /**
  * Created by hihi on 6/6/2016.
@@ -277,6 +278,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             // just return
             return;
         }
+        if (RecordUtil.sharedInstance().isDeleting()) return;
         // The fragment has not consumed the back press action
         // let the activity handle it in its default way
         super.onBackPressed();
