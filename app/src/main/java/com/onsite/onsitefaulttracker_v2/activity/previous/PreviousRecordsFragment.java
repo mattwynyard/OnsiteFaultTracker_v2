@@ -38,7 +38,7 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
 
     // List View which will display the previously created records
     private ListView mPreviousRecordsList;
-    private ProgressBar mSubmittingProgressBar;
+    private ProgressBar mDeletingProgressBar;
     // The adapter for previous records list
     private PreviousRecordsAdapter mPreviousRecordsAdapter;
 
@@ -64,7 +64,7 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
         View view = super.onCreateView(inflater, container, savedInstanceState);
         if (view != null) {
             mPreviousRecordsList = (ListView)view.findViewById(R.id.previous_records_list);
-            mSubmittingProgressBar = (ProgressBar) view.findViewById(R.id.submitting_progress_bar);
+            mDeletingProgressBar = (ProgressBar) view.findViewById(R.id.deleting_progress_bar);
         }
         return view;
     }
@@ -118,7 +118,8 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
     }
 
     private void onDeleteComplete() {
-        mSubmittingProgressBar.setVisibility(View.INVISIBLE);
+        populatePreviousRecordsList();
+        mDeletingProgressBar.setVisibility(View.INVISIBLE);
     }
 
     /**
@@ -129,19 +130,16 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
     private void deleteRecord(final Record record) {
         RecordUtil.sharedInstance().setDeleteListener(mPreviousRecordsAdapter);
         mPreviousRecordsAdapter.setCounter(record.photoCount);
-
+        mDeletingProgressBar.setVisibility(View.VISIBLE);
         ThreadUtil.executeOnNewThread(new Runnable() {
             @Override
             public void run() {
                 try {
                     RecordUtil.sharedInstance().deleteRecord(record);
-
-
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
-//                mSubmittingProgressBar.setVisibility(View.VISIBLE);
-                populatePreviousRecordsList();
+                onDeleteComplete();
             }
         });
     }
@@ -182,22 +180,6 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
 
         final TextView nameTextView = (TextView)moreOptionsLayout.findViewById(R.id.record_name_text_view);
 
-        final Button submitButton = (Button)moreOptionsLayout.findViewById(R.id.submit_record_button);
-        submitButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onUploadButtonClicked(record);
-            }
-        });
-
-        final Button continueButton = (Button)moreOptionsLayout.findViewById(R.id.continue_recording_button);
-        continueButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onRecordButtonClicked(record);
-            }
-        });
-
         final Button deleteButton = (Button)moreOptionsLayout.findViewById(R.id.delete_record_button);
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -210,36 +192,6 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
 
     }
 
-    /**
-     * action when user clicks on the record button on an item
-     *
-     * @param recordItem
-     */
-    @Override
-    public void onRecordButtonClicked(final Record recordItem) {
-        RecordUtil.sharedInstance().setCurrentRecord(recordItem);
-        if (mListener != null) {
-            mListener.onRecordRecord(recordItem);
-        }
-    }
-
-    /**
-     * action when the user clicks on the upload button on an item
-     *
-     * @param recordItem
-     */
-    @Override
-    public void onUploadButtonClicked(final Record recordItem) {
-        if (mListener != null) {
-            mListener.onUploadRecord(recordItem);
-        }
-    }
-
-    /**
-     * action when the user clicks on the delete button of a finalized item
-     *
-     * @param recordItem
-     */
     @Override
     public void onDeleteButtonClicked(final Record recordItem) {
         confirmDeleteRecord(recordItem);

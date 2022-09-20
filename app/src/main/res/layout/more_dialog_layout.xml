@@ -19,26 +19,6 @@
         />
 
     <Button
-        android:id="@+id/continue_recording_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/submit_record_more_record"
-        android:textSize="@dimen/button_text_size"
-        android:textColor="@color/colorAccent"
-        android:background="@color/transparent"
-        />
-
-    <Button
-        android:id="@+id/submit_record_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/submit_record_more_submit"
-        android:textSize="@dimen/button_text_size"
-        android:textColor="@color/colorAccent"
-        android:background="@color/transparent"
-        />
-
-    <Button
         android:id="@+id/delete_record_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
