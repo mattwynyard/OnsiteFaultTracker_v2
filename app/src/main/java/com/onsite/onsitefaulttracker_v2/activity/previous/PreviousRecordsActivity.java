@@ -53,26 +53,26 @@ public class PreviousRecordsActivity extends BaseActivity implements PreviousRec
      *
      * @param record
      */
-    @Override
-    public void onRecordRecord(final Record record) {
-        Intent recordIntent = new Intent();
-        recordIntent.setClass(this, RecordActivity.class);
-        startActivity(recordIntent);
-    }
-
-    /**
-     * Action when the user chooses to upload a record,
-     * open the submit record screen
-     *
-     * @param record
-     */
-    @Override
-    public void onUploadRecord(final Record record) {
-        Intent submitRecordIntent = new Intent();
-        submitRecordIntent.setClass(this, SubmitActivity.class);
-        submitRecordIntent.putExtra(SubmitActivity.EXTRA_RECORD_ID, record.recordId);
-
-        startActivity(submitRecordIntent);
-    }
+//    @Override
+//    public void onRecordRecord(final Record record) {
+//        Intent recordIntent = new Intent();
+//        recordIntent.setClass(this, RecordActivity.class);
+//        startActivity(recordIntent);
+//    }
+//
+//    /**
+//     * Action when the user chooses to upload a record,
+//     * open the submit record screen
+//     *
+//     * @param record
+//     */
+//    @Override
+//    public void onUploadRecord(final Record record) {
+//        Intent submitRecordIntent = new Intent();
+//        submitRecordIntent.setClass(this, SubmitActivity.class);
+//        submitRecordIntent.putExtra(SubmitActivity.EXTRA_RECORD_ID, record.recordId);
+//
+//        startActivity(submitRecordIntent);
+//    }
 
 }

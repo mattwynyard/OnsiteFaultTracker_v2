@@ -171,7 +171,7 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
         percentage = Math.min(100.0f, percentage);
         mPercentageTextView.setText(String.format("%.0f%%", percentage));
         // If the submission is already complete show that
-        if (mRecord.fileUploadCount > mRecord.photoCount) {
+        if (mRecord.zipped) {
             onSubmissionComplete();
         }
     }

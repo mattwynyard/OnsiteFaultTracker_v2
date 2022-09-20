@@ -150,7 +150,7 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
      * @param record
      */
     private void confirmDeleteRecord(final Record record) {
-        boolean recordFinalized = record.uploadedSizeKB >= record.totalSizeKB;
+        boolean recordFinalized = record.zipped = true;
 
         String deleteMessage = recordFinalized ? getString(R.string.delete_previous_record_message) :
                 getString(R.string.delete_previous_record_not_finalized_message);
@@ -240,7 +240,6 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
      * Listener for communicating user actions to the parent activity
      */
     public interface Listener {
-        void onRecordRecord(final Record record);
-        void onUploadRecord(final Record record);
+
     }
 }

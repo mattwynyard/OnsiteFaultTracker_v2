@@ -24,6 +24,8 @@ public class Record {
 
     public boolean zipped;
 
+    public int photoZippedCount;
+    public long zippedSizeKB;
     // The size in kb of the record
     // To be initialized by calculating size of stored files for a record
     public long recordSizeKB;
@@ -31,10 +33,8 @@ public class Record {
     // The total size in KB of the record
     public long totalSizeKB;
 
-    // The number of files that have been uploaded to dropbox already
     public int fileUploadCount;
 
-    // total size in KB that has been uploaded
     public long uploadedSizeKB;
 
     // The folder name of the record

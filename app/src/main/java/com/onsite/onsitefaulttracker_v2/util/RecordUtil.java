@@ -185,8 +185,8 @@ public class RecordUtil {
         newRecord.recordId = UUID.randomUUID().toString();
         newRecord.photoCount = 0;
         newRecord.recordSizeKB = 0;
-        newRecord.uploadedSizeKB = 0;
-        newRecord.fileUploadCount = 0;
+//        newRecord.uploadedSizeKB = 0;
+//        newRecord.fileUploadCount = 0;
         newRecord.zipped = false;
         ArrayList<Record> todaysRecords = getRecordsForDate(newRecord.creationDate);
         String appendString = todaysRecords != null && todaysRecords.size() > 0 ? "_" + (todaysRecords.size() + 1) : "";
@@ -357,23 +357,22 @@ public class RecordUtil {
 
     }
 
-    private void deleteSafe(File baseFolder) {
-        File[] files = baseFolder.listFiles();
-        for (File f : files) {
-            if (f.isDirectory()) {
-                File[] photos = f.listFiles();
-                for (File photo : photos) {
-                    photo.delete();
-                    mDeleteListener.deleted(++mDeletedPhotoCount);
-                }
-                f.delete();
-            } else {
-                f.delete();
-            }
-        }
-        baseFolder.delete();
-
-    }
+//    private void deleteSafe(File baseFolder) {
+//        File[] files = baseFolder.listFiles();
+//        for (File f : files) {
+//            if (f.isDirectory()) {
+//                File[] photos = f.listFiles();
+//                for (File photo : photos) {
+//                    photo.delete();
+//                    mDeleteListener.deleted(++mDeletedPhotoCount);
+//                }
+//                f.delete();
+//            } else {
+//                f.delete();
+//            }
+//        }
+//        baseFolder.delete();
+//    }
 
     private void deleteFolder(File baseFolder) throws FileNotFoundException {
         if (baseFolder.isDirectory()) {

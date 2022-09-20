@@ -218,9 +218,10 @@ public class HomeFragment extends BaseFragment {
         boolean hasCurrentRecord = r != null;
         if (hasCurrentRecord) {
             mNewRecordButton.setEnabled(false);
-            mContinueRecordButton.setEnabled(r.fileUploadCount == 0);
+            mContinueRecordButton.setEnabled(true);
             mPreviousRecordsButton.setEnabled(true);
             mSubmitRecordButton.setEnabled(r.photoCount > 0);
+
         } else {
             if (inspector == "") {
                 mNewRecordButton.setEnabled(false);
