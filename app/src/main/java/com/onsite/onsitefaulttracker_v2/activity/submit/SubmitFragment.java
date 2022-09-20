@@ -338,7 +338,7 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
     @Override
     public void zipCount(int count) {
         Log.i("count: ", String.valueOf(count));
-        mRecord.fileUploadCount = count;
+        mRecord.photoZippedCount = count;
     }
 
     /**
