@@ -1,11 +1,6 @@
 package com.onsite.onsitefaulttracker_v2;
 
 import android.app.Application;
-import android.util.Log;
-
-//import com.crashlytics.android.Crashlytics;
-//import io.fabric.sdk.android.Fabric;
-
 import com.onsite.onsitefaulttracker_v2.connectivity.BLTManager;
 import com.onsite.onsitefaulttracker_v2.model.notifcation_events.BLTStopRecordingEvent;
 import com.onsite.onsitefaulttracker_v2.util.BatteryUtil;
@@ -17,12 +12,8 @@ import com.onsite.onsitefaulttracker_v2.util.EXIFUtil;
 import com.onsite.onsitefaulttracker_v2.util.GPSUtil;
 import com.onsite.onsitefaulttracker_v2.util.LogUtil;
 import com.onsite.onsitefaulttracker_v2.util.MessageUtil;
-import com.onsite.onsitefaulttracker_v2.util.MotionUtil;
 import com.onsite.onsitefaulttracker_v2.util.RecordUtil;
 import com.onsite.onsitefaulttracker_v2.util.SettingsUtil;
-
-//import static com.crashlytics.android.beta.Beta.TAG;
-
 /**
  * Created by hihi on 6/6/2016.
  *

@@ -99,9 +99,6 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
 
     private long totalSizeKB = 0;
     private long totalBytes = 0;
-
-
-
     /**
      * On create view, Override this in each extending fragment to implement initialization for that
      * fragment.
@@ -120,7 +117,6 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
                 mRecordId = args.getString(ARG_RECORD_ID);
             }
             mDisplayImageIndex = 0;
-
             mNameTextView = (TextView) view.findViewById(R.id.record_name_text_view);
             mDateTextView = (TextView) view.findViewById(R.id.record_creation_date_text_view);
             mTotalSizeTextView = (TextView) view.findViewById(R.id.total_size_text_view);
@@ -230,8 +226,6 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
         }
         return outPath;
     }
-
-
 
     /**
      * Action when the user clicks on submit,  initiate the dropbox api

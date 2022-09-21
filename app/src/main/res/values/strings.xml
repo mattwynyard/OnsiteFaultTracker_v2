@@ -89,8 +89,9 @@
     <string name="record_progress_ready_to_submit">READY TO SUBMIT</string>
     <string name="record_progress_finalized">FINALIZED</string>
 
-    <string name="delete_previous_record_title">Are you sure?</string>
-    <string name="delete_previous_record_not_finalized_message">Deleting a record cannot be undone and this record has not yet been finalized.  All work will be lost, are your sure you want to delete?</string>
+    <string name="delete_previous_record_title_notzipped">Record Not Zipped!</string>
+    <string name="delete_previous_record_title_zipped">Confirm Delete Record</string>
+    <string name="delete_previous_record_not_finalized_message">The record has not been zipped!\n Do you still want to delete this record?</string>
     <string name="delete_previous_record_message">Are you sure you want to delete this record?</string>
     <string name="delete_previous_record_delete">Delete</string>
     <string name="delete_previous_record_cancel">Cancel</string>
