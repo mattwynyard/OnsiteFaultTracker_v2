@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -43,6 +44,7 @@ import com.squareup.otto.Subscribe;
 
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -192,6 +194,7 @@ public class HomeFragment extends BaseFragment {
         super.onDetach();
         mListener = null;
         BusNotificationUtil.sharedInstance().getBus().unregister(this);
+        updateButtonStates();
     }
 
     /**
@@ -236,6 +239,10 @@ public class HomeFragment extends BaseFragment {
      */
     private void updateCurrentRecordText() {
         Record currentRecord = RecordUtil.sharedInstance().getCurrentRecord();
+//        ArrayList<Record>  mRecords = RecordUtil.sharedInstance().getAllSavedRecords();
+//        if (currentRecord != null && mRecords.isEmpty()) {
+//            RecordUtil.sharedInstance().clearSharedPreferences();
+//        }
         if (currentRecord == null) {
             mCurrentRecordName.setText(getString(R.string.no_current_record));
             mCurrentRecordDate.setText("");
@@ -497,8 +504,8 @@ public class HomeFragment extends BaseFragment {
      * Action when a user clicks on the previous records button
      */
     private void onPreviousRecordsClicked() {
-        Toast.makeText(mContext, "Succesfull satellite fix!",
-                Toast.LENGTH_SHORT).show();
+//        Toast.makeText(mContext, "Succesfull satellite fix!",
+//                Toast.LENGTH_SHORT).show();
         if (mListener != null) {
             mListener.onPreviousRecords();
         }

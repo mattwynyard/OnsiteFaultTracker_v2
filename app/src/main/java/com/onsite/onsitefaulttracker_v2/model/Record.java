@@ -22,6 +22,8 @@ public class Record {
     // Number of photos created so far
     public int photoCount;
 
+    public boolean zipped;
+
     // The size in kb of the record
     // To be initialized by calculating size of stored files for a record
     public long recordSizeKB;
