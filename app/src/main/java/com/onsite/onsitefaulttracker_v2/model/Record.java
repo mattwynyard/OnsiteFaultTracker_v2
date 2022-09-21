@@ -33,9 +33,9 @@ public class Record {
     // The total size in KB of the record
     public long totalSizeKB;
 
-    public int fileUploadCount;
+    //public int fileUploadCount;
 
-    public long uploadedSizeKB;
+    //public long uploadedSizeKB;
 
     // The folder name of the record
     public String recordFolderName;

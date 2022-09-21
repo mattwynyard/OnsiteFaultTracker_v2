@@ -26,6 +26,8 @@ import com.onsite.onsitefaulttracker_v2.util.ThreadUtil;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Created by hihi on 6/25/2016.
@@ -33,7 +35,7 @@ import java.text.SimpleDateFormat;
  * The Submit Fragment, The default fragment of submit Activity.
  * Here the user can submit their record and upload it to drop box
  */
-public class SubmitFragment extends BaseFragment implements Compressor.CompressorListener{
+public class SubmitFragment extends BaseFragment implements Compressor.CompressorListener {
 
     // The tag name for this fragment
     private static final String TAG = SubmitFragment.class.getSimpleName();
@@ -145,7 +147,6 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
      */
     public void onAttach(Context context) {
         super.onAttach(context);
-
         mResumed = true;
     }
 
@@ -167,12 +168,12 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MMMM yyyy, h:mm a");
         mDateTextView.setText(String.format(getString(R.string.submit_created_date), simpleDateFormat.format(mRecord.creationDate)));
         mTotalSizeTextView.setText(String.format(getString(R.string.submit_total_size), CalculationUtil.sharedInstance().getDisplayValueFromKB(mRecord.totalSizeKB)));
-        float percentage = ((float)mRecord.uploadedSizeKB / (float)mRecord.totalSizeKB) * 100.0f;
+        float percentage = ((float)mRecord.zippedSizeKB / (float)mRecord.totalSizeKB) * 100.0f;
         percentage = Math.min(100.0f, percentage);
         mPercentageTextView.setText(String.format("%.0f%%", percentage));
         // If the submission is already complete show that
         if (mRecord.zipped) {
-            onSubmissionComplete();
+            mSubmitButton.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -209,8 +210,28 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
         mRecordSubmittedTextView.setVisibility(View.VISIBLE);
         mSubmittingProgressBar.setVisibility(View.INVISIBLE);
         mSubmitButton.setVisibility(View.INVISIBLE);
+        mRecord.zipped = true;
         RecordUtil.sharedInstance().saveRecord(mRecord);
     }
+
+    private String setOutPath() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat(OUT_RECORD_DATE_FORMAT);
+        final String dateString = dateFormat.format(mRecord.creationDate);
+        String outPath = RecordUtil.sharedInstance().getBaseFolder()
+                .getAbsolutePath() + "/" + SettingsUtil.sharedInstance().getInspectorId() + "_" + dateString + ".zip";
+        File f = new File(outPath);
+        if(f.exists()) {
+            System.out.println("File exits");
+            Date currentTime = Calendar.getInstance().getTime();
+            SimpleDateFormat sdf = new SimpleDateFormat("HH-mm-ss");
+            String time = sdf.format((currentTime));
+            outPath = RecordUtil.sharedInstance().getBaseFolder()
+                    .getAbsolutePath() + "/" + SettingsUtil.sharedInstance().getInspectorId() + "_" + dateString + "_" + time + ".zip";
+        }
+        return outPath;
+    }
+
+
 
     /**
      * Action when the user clicks on submit,  initiate the dropbox api
@@ -228,11 +249,7 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
             fileNames[i] = mRecordFiles[i].getAbsolutePath();
         }
         updateUIValues();
-        SimpleDateFormat dateFormat = new SimpleDateFormat(OUT_RECORD_DATE_FORMAT);
-        final String dateString = dateFormat.format(mRecord.creationDate);
-        String outPath = RecordUtil.sharedInstance().getBaseFolder()
-                .getAbsolutePath() + "/" + SettingsUtil.sharedInstance().getInspectorId() + "_" + dateString + ".zip";
-        final Compressor compressor = new Compressor(fileNames, outPath);
+        final Compressor compressor = new Compressor(fileNames, setOutPath());
         compressor.setCompressorListener(this);
         mSubmittingProgressBar.setVisibility(View.VISIBLE);
         mSubmitButton.setEnabled(false);
@@ -267,11 +284,11 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
                     });
                     try
                     {
-                        Thread.sleep(100);
+                        Thread.sleep(50);
                     }
                     catch (Exception ex)
                     {
-
+                        ex.printStackTrace();
                     }
                 }
                 ThreadUtil.executeOnMainThread(new Runnable() {
@@ -305,7 +322,6 @@ public class SubmitFragment extends BaseFragment implements Compressor.Compresso
                     })
                     .setNegativeButton(getString(R.string.submitting_back_dialog_cancel), null)
                     .show();
-
             return true;
         } else {
             return false;

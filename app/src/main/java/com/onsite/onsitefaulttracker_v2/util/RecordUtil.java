@@ -44,17 +44,11 @@ public class RecordUtil {
     // The format of folder names when converted from a date
     private static final String FOLDER_DATE_FORMAT = "yy_MM_dd";
     private static String FOLDER_SUFFIX;
-    // The static instance of this class which will be initialized once then reused
-    // throughout the app
     private static RecordUtil sRecordUtil;
-    // The number of records in storage
     private int mStoredRecordCount;
     private int mDeletedPhotoCount = 0;
-    // The current active record
     private Record mCurrentRecord;
-    // Gson object which converts json strings to objects and vice versa
     private Gson mGson;
-    // The application context
     private Context mContext;
     private DeleteListener mDeleteListener;
     private boolean isDeleting;
@@ -185,8 +179,6 @@ public class RecordUtil {
         newRecord.recordId = UUID.randomUUID().toString();
         newRecord.photoCount = 0;
         newRecord.recordSizeKB = 0;
-//        newRecord.uploadedSizeKB = 0;
-//        newRecord.fileUploadCount = 0;
         newRecord.zipped = false;
         ArrayList<Record> todaysRecords = getRecordsForDate(newRecord.creationDate);
         String appendString = todaysRecords != null && todaysRecords.size() > 0 ? "_" + (todaysRecords.size() + 1) : "";
