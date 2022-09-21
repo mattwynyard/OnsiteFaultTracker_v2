@@ -10,14 +10,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
-
 import com.onsite.onsitefaulttracker_v2.R;
 import com.onsite.onsitefaulttracker_v2.model.Record;
 import com.onsite.onsitefaulttracker_v2.util.CalculationUtil;
 import com.onsite.onsitefaulttracker_v2.util.RecordUtil;
 import com.onsite.onsitefaulttracker_v2.util.ThreadUtil;
-import com.squareup.otto.Subscribe;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -209,7 +206,7 @@ public class PreviousRecordsAdapter extends BaseAdapter implements RecordUtil.De
         holder.mRecordSizeTextView.setText(sizeString);
         String recordingTimeString = CalculationUtil.sharedInstance().getDisplayValueFromMilliseconds(item.totalRecordTime) + " recorded";
         holder.mRecordingTimeTextView.setText(recordingTimeString);
-        if (item.fileUploadCount > item.photoCount) {
+        if (item.zipped) {
             // Item Finished
             holder.mProgressTextView.setText(mContext.getString(R.string.record_progress_finalized));
             holder.mProgressTextView.setTextColor(ContextCompat.getColor(mContext, R.color.finalized_red));
@@ -225,22 +222,6 @@ public class PreviousRecordsAdapter extends BaseAdapter implements RecordUtil.De
             holder.mDeleteButton.setVisibility(View.INVISIBLE);
         }
 
-        holder.mRecordButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mRecordItemListener != null) {
-                    mRecordItemListener.onRecordButtonClicked(item);
-                }
-            }
-        });
-        holder.mUploadButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mRecordItemListener != null) {
-                    mRecordItemListener.onUploadButtonClicked(item);
-                }
-            }
-        });
         holder.mDeleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -264,8 +245,6 @@ public class PreviousRecordsAdapter extends BaseAdapter implements RecordUtil.De
      *  Listener for communicating button clicks to the parent fragment
      */
     public interface RecordItemListener {
-        void onRecordButtonClicked(final Record recordItem);
-        void onUploadButtonClicked(final Record recordItem);
         void onDeleteButtonClicked(final Record recordItem);
         void onMoreButtonClicked(final Record recordItem);
     }

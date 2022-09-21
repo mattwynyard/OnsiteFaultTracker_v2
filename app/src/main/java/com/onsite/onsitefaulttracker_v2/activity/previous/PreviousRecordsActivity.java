@@ -1,12 +1,8 @@
 package com.onsite.onsitefaulttracker_v2.activity.previous;
 
-import android.content.Intent;
-import android.os.Bundle;
 
+import android.os.Bundle;
 import com.onsite.onsitefaulttracker_v2.activity.BaseActivity;
-import com.onsite.onsitefaulttracker_v2.activity.record.RecordActivity;
-import com.onsite.onsitefaulttracker_v2.activity.submit.SubmitActivity;
-import com.onsite.onsitefaulttracker_v2.model.Record;
 
 /**
  * Created by hihi on 6/25/2016.
@@ -47,32 +43,4 @@ public class PreviousRecordsActivity extends BaseActivity implements PreviousRec
     protected BaseActivity.ActionBarConfig getDefaultActionBarConfig() {
         return BaseActivity.ActionBarConfig.Back;
     }
-
-    /**
-     * Action when user chooses to record a record
-     *
-     * @param record
-     */
-    @Override
-    public void onRecordRecord(final Record record) {
-        Intent recordIntent = new Intent();
-        recordIntent.setClass(this, RecordActivity.class);
-        startActivity(recordIntent);
-    }
-
-    /**
-     * Action when the user chooses to upload a record,
-     * open the submit record screen
-     *
-     * @param record
-     */
-    @Override
-    public void onUploadRecord(final Record record) {
-        Intent submitRecordIntent = new Intent();
-        submitRecordIntent.setClass(this, SubmitActivity.class);
-        submitRecordIntent.putExtra(SubmitActivity.EXTRA_RECORD_ID, record.recordId);
-
-        startActivity(submitRecordIntent);
-    }
-
 }

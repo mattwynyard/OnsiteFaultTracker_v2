@@ -5,9 +5,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -21,8 +19,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import com.onsite.onsitefaulttracker_v2.R;
 import com.onsite.onsitefaulttracker_v2.activity.BaseFragment;
 import com.onsite.onsitefaulttracker_v2.connectivity.BLTManager;
@@ -218,9 +214,10 @@ public class HomeFragment extends BaseFragment {
         boolean hasCurrentRecord = r != null;
         if (hasCurrentRecord) {
             mNewRecordButton.setEnabled(false);
-            mContinueRecordButton.setEnabled(r.fileUploadCount == 0);
+            mContinueRecordButton.setEnabled(true);
             mPreviousRecordsButton.setEnabled(true);
             mSubmitRecordButton.setEnabled(r.photoCount > 0);
+
         } else {
             if (inspector == "") {
                 mNewRecordButton.setEnabled(false);
@@ -239,10 +236,6 @@ public class HomeFragment extends BaseFragment {
      */
     private void updateCurrentRecordText() {
         Record currentRecord = RecordUtil.sharedInstance().getCurrentRecord();
-//        ArrayList<Record>  mRecords = RecordUtil.sharedInstance().getAllSavedRecords();
-//        if (currentRecord != null && mRecords.isEmpty()) {
-//            RecordUtil.sharedInstance().clearSharedPreferences();
-//        }
         if (currentRecord == null) {
             mCurrentRecordName.setText(getString(R.string.no_current_record));
             mCurrentRecordDate.setText("");

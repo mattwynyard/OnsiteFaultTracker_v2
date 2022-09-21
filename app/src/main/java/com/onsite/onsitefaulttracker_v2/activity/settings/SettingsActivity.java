@@ -1,7 +1,6 @@
 package com.onsite.onsitefaulttracker_v2.activity.settings;
 
 import android.os.Bundle;
-
 import com.onsite.onsitefaulttracker_v2.activity.BaseActivity;
 import com.onsite.onsitefaulttracker_v2.activity.BaseFragment;
 

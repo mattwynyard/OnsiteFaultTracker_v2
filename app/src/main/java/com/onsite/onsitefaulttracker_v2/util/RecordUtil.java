@@ -44,17 +44,11 @@ public class RecordUtil {
     // The format of folder names when converted from a date
     private static final String FOLDER_DATE_FORMAT = "yy_MM_dd";
     private static String FOLDER_SUFFIX;
-    // The static instance of this class which will be initialized once then reused
-    // throughout the app
     private static RecordUtil sRecordUtil;
-    // The number of records in storage
     private int mStoredRecordCount;
     private int mDeletedPhotoCount = 0;
-    // The current active record
     private Record mCurrentRecord;
-    // Gson object which converts json strings to objects and vice versa
     private Gson mGson;
-    // The application context
     private Context mContext;
     private DeleteListener mDeleteListener;
     private boolean isDeleting;
@@ -185,8 +179,6 @@ public class RecordUtil {
         newRecord.recordId = UUID.randomUUID().toString();
         newRecord.photoCount = 0;
         newRecord.recordSizeKB = 0;
-        newRecord.uploadedSizeKB = 0;
-        newRecord.fileUploadCount = 0;
         newRecord.zipped = false;
         ArrayList<Record> todaysRecords = getRecordsForDate(newRecord.creationDate);
         String appendString = todaysRecords != null && todaysRecords.size() > 0 ? "_" + (todaysRecords.size() + 1) : "";
@@ -347,43 +339,25 @@ public class RecordUtil {
         File folder = new File(path);
         if (folder.exists()) {
             isDeleting = true;
-            deleteFolder(folder);
+            delete(folder);
         }
         RecordUtil.sharedInstance().clearSharedPreferences();
         mCurrentRecord = null;
         BitmapSaveUtil.sharedInstance().reset();
         mStoredRecordCount--;
         isDeleting = false;
-
     }
 
-    private void deleteSafe(File baseFolder) {
-        File[] files = baseFolder.listFiles();
-        for (File f : files) {
-            if (f.isDirectory()) {
-                File[] photos = f.listFiles();
-                for (File photo : photos) {
-                    photo.delete();
-                    mDeleteListener.deleted(++mDeletedPhotoCount);
-                }
-                f.delete();
-            } else {
-                f.delete();
-            }
-        }
-        baseFolder.delete();
 
-    }
-
-    private void deleteFolder(File baseFolder) throws FileNotFoundException {
-        if (baseFolder.isDirectory()) {
-            for (File c : baseFolder.listFiles())
-                deleteFolder(c);
+    private void delete(File f) throws FileNotFoundException {
+        if (f.isDirectory()) {
+            for (File c : f.listFiles())
+                delete(c);
         }
-        if (baseFolder.delete()) {
+        if (f.delete()) {
             mDeleteListener.deleted(++mDeletedPhotoCount);
         } else {
-            throw new FileNotFoundException("Failed to delete file: " + baseFolder);
+            throw new FileNotFoundException("Failed to delete file: " + f);
         }
     }
     /**
@@ -488,7 +462,6 @@ public class RecordUtil {
         if (!newRecordPath.exists()) {
             return false;
         }
-
         String jsonString = mGson.toJson(record);
         if (!TextUtils.isEmpty(jsonString)) {
             // TODO: Write to file
@@ -502,7 +475,6 @@ public class RecordUtil {
                     return false;
                 }
             }
-
             writeToFile(jsonString, outputFile);
             return true;
         } else {
@@ -592,15 +564,11 @@ public class RecordUtil {
      * Updates the record count variable by counting the number of records in storage
      */
     private void updateRecordCount() {
-        // Set the count to 0,  if the storage can not be accessed then the stored record count
-        // will be left as 0
         mStoredRecordCount = 0;
         File rootFolder = getBaseFolder();
         if (rootFolder == null) {
             return;
         }
-
-        // Each directory in this folder represents one record.
         File[] fileList = rootFolder.listFiles();
         if (fileList != null) {
             for (File eachFile : fileList) {

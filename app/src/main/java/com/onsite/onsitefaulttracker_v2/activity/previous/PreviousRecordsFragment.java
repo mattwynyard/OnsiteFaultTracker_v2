@@ -4,8 +4,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,7 +36,7 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
 
     // List View which will display the previously created records
     private ListView mPreviousRecordsList;
-    private ProgressBar mSubmittingProgressBar;
+    private ProgressBar mDeletingProgressBar;
     // The adapter for previous records list
     private PreviousRecordsAdapter mPreviousRecordsAdapter;
 
@@ -49,7 +47,7 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
     // Listener for communicating with the parent activity
     private Listener mListener;
 
-    private Handler mHandler;
+    //private Handler mHandler;
     /**
      * On create view, Override this in each extending fragment to implement initialization for that
      * fragment.
@@ -64,7 +62,7 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
         View view = super.onCreateView(inflater, container, savedInstanceState);
         if (view != null) {
             mPreviousRecordsList = (ListView)view.findViewById(R.id.previous_records_list);
-            mSubmittingProgressBar = (ProgressBar) view.findViewById(R.id.submitting_progress_bar);
+            mDeletingProgressBar = (ProgressBar) view.findViewById(R.id.deleting_progress_bar);
         }
         return view;
     }
@@ -118,7 +116,8 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
     }
 
     private void onDeleteComplete() {
-        mSubmittingProgressBar.setVisibility(View.INVISIBLE);
+        populatePreviousRecordsList();
+        mDeletingProgressBar.setVisibility(View.INVISIBLE);
     }
 
     /**
@@ -129,19 +128,16 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
     private void deleteRecord(final Record record) {
         RecordUtil.sharedInstance().setDeleteListener(mPreviousRecordsAdapter);
         mPreviousRecordsAdapter.setCounter(record.photoCount);
-
+        mDeletingProgressBar.setVisibility(View.VISIBLE);
         ThreadUtil.executeOnNewThread(new Runnable() {
             @Override
             public void run() {
                 try {
                     RecordUtil.sharedInstance().deleteRecord(record);
-
-
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
-//                mSubmittingProgressBar.setVisibility(View.VISIBLE);
-                populatePreviousRecordsList();
+                onDeleteComplete();
             }
         });
     }
@@ -152,13 +148,14 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
      * @param record
      */
     private void confirmDeleteRecord(final Record record) {
-        boolean recordFinalized = record.uploadedSizeKB >= record.totalSizeKB;
-
-        String deleteMessage = recordFinalized ? getString(R.string.delete_previous_record_message) :
+        String deleteMessage = record.zipped ? getString(R.string.delete_previous_record_message) :
                 getString(R.string.delete_previous_record_not_finalized_message);
 
+        String titleMessage = record.zipped ? getString(R.string.delete_previous_record_title_zipped)
+                : getString(R.string.delete_previous_record_title_notzipped) ;
+
         new AlertDialog.Builder(getActivity())
-                .setTitle(getString(R.string.delete_previous_record_title))
+                .setTitle(titleMessage)
                 .setMessage(deleteMessage)
                 .setPositiveButton(getString(R.string.delete_previous_record_delete), new DialogInterface.OnClickListener() {
                     @Override
@@ -182,24 +179,8 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
 
         final TextView nameTextView = (TextView)moreOptionsLayout.findViewById(R.id.record_name_text_view);
 
-        final Button submitButton = (Button)moreOptionsLayout.findViewById(R.id.submit_record_button);
-        submitButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onUploadButtonClicked(record);
-            }
-        });
-
-        final Button continueButton = (Button)moreOptionsLayout.findViewById(R.id.continue_recording_button);
-        continueButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onRecordButtonClicked(record);
-            }
-        });
-
         final Button deleteButton = (Button)moreOptionsLayout.findViewById(R.id.delete_record_button);
-        deleteButton.setOnClickListener(new View.OnClickListener() {
+        deleteButton.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 moreOptionsAlert.dismiss();
@@ -210,36 +191,6 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
 
     }
 
-    /**
-     * action when user clicks on the record button on an item
-     *
-     * @param recordItem
-     */
-    @Override
-    public void onRecordButtonClicked(final Record recordItem) {
-        RecordUtil.sharedInstance().setCurrentRecord(recordItem);
-        if (mListener != null) {
-            mListener.onRecordRecord(recordItem);
-        }
-    }
-
-    /**
-     * action when the user clicks on the upload button on an item
-     *
-     * @param recordItem
-     */
-    @Override
-    public void onUploadButtonClicked(final Record recordItem) {
-        if (mListener != null) {
-            mListener.onUploadRecord(recordItem);
-        }
-    }
-
-    /**
-     * action when the user clicks on the delete button of a finalized item
-     *
-     * @param recordItem
-     */
     @Override
     public void onDeleteButtonClicked(final Record recordItem) {
         confirmDeleteRecord(recordItem);
@@ -252,6 +203,7 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
      */
     @Override
     public void onMoreButtonClicked(final Record recordItem) {
+
         showMoreOptionsDialog(recordItem);
     }
 
@@ -261,6 +213,7 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
      * @return
      */
     public static PreviousRecordsFragment createInstance() {
+
         return new PreviousRecordsFragment();
     }
 
@@ -288,7 +241,6 @@ public class PreviousRecordsFragment extends BaseFragment implements PreviousRec
      * Listener for communicating user actions to the parent activity
      */
     public interface Listener {
-        void onRecordRecord(final Record record);
-        void onUploadRecord(final Record record);
+
     }
 }
